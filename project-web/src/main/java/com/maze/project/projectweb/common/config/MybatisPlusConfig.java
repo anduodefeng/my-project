@@ -1,4 +1,4 @@
-package com.maze.project.projectweb.config;
+package com.maze.project.projectweb.common.config;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
