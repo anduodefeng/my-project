@@ -1,12 +1,15 @@
 package com.maze.project.projectweb.controller;
 
 import com.maze.project.projectweb.dto.BaseDTO;
-import com.maze.project.projectweb.vo.LoginVO;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -17,15 +20,19 @@ import java.util.Map;
 public class UserController {
 
     @GetMapping("login")
-    public BaseDTO login(@Validated @RequestBody LoginVO loginVO){
-
-        BaseDTO baseDTO = new BaseDTO();
-        baseDTO.setCode(200);
-        baseDTO.setMessage("success");
+    public BaseDTO login(){
         Map<String, String> map = new HashMap<>();
         map.put("token", "123456789");
-        baseDTO.setData(map);
 
-        return baseDTO;
+        return BaseDTO.ok().data(map);
+    }
+
+    @GetMapping("info")
+    public BaseDTO info(){
+        Map<String, List<String>> map = new HashMap<>();
+        List<String> list = new ArrayList<>();
+        list.add("admin");
+        map.put("roles", list);
+        return BaseDTO.ok().data(map);
     }
 }
