@@ -2,7 +2,9 @@ package com.maze.project.web.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.maze.project.web.dto.cash.CashPageDTO;
 import com.maze.project.web.entity.MyCash;
+import com.maze.project.web.vo.cash.CashPageVO;
 
 /**
  * <p>
@@ -14,4 +16,5 @@ import com.maze.project.web.entity.MyCash;
  */
 public interface MyCashService extends IService<MyCash> {
 
+    CashPageDTO getCashPage(CashPageVO cashPageVO);
 }

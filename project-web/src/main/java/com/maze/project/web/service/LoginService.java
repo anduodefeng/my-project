@@ -3,9 +3,9 @@ package com.maze.project.web.service;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.crypto.digest.MD5;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.maze.project.web.dto.LoginDTO;
+import com.maze.project.web.dto.common.LoginDTO;
 import com.maze.project.web.entity.MyUser;
-import com.maze.project.web.vo.LoginVO;
+import com.maze.project.web.vo.common.LoginVO;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;

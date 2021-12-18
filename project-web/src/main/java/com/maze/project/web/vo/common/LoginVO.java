@@ -1,4 +1,4 @@
-package com.maze.project.web.vo;
+package com.maze.project.web.vo.common;
 
 import lombok.Data;
 import lombok.ToString;

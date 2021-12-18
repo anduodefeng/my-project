@@ -1,4 +1,4 @@
-package com.maze.project.web.dto;
+package com.maze.project.web.dto.common;
 
 import com.maze.project.web.common.enums.ResponseCodeEnum;
 import lombok.Data;

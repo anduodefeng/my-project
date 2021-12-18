@@ -3,10 +3,10 @@ package com.maze.project.web.service;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.maze.project.web.common.constant.CommonConstant;
-import com.maze.project.web.dto.UserInfoDTO;
+import com.maze.project.web.dto.common.UserInfoDTO;
 import com.maze.project.web.entity.MyRoles;
 import com.maze.project.web.entity.MyUserRoles;
-import com.maze.project.web.vo.GetUserInfoVO;
+import com.maze.project.web.vo.common.GetUserInfoVO;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

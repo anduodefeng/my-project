@@ -1,4 +1,4 @@
-package com.maze.project.web.dto;
+package com.maze.project.web.dto.common;
 
 import lombok.Data;
 

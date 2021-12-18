@@ -1,7 +1,7 @@
 package com.maze.project.web.common.exception;
 
 import com.maze.project.web.common.util.ExceptionUtil;
-import com.maze.project.web.dto.BaseDTO;
+import com.maze.project.web.dto.common.BaseDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,7 +16,7 @@ import java.util.List;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(GlobalException.class)
-    public BaseDTO handException(Exception e){
+    public BaseDTO handGlobalException(Exception e){
         log.error(ExceptionUtil.getMessage(e));
         return BaseDTO.error().message(e.getMessage());
     }

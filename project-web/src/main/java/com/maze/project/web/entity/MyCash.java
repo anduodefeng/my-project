@@ -38,13 +38,16 @@ public class MyCash implements Serializable {
     private String bankName;
 
     /**
-     * 现金
+     * 现金余额
      */
-    @TableField("cash")
-    private BigDecimal cash;
+    @TableField("amount")
+    private BigDecimal amount;
 
     @TableField("create_time")
     private LocalDateTime createTime;
+
+    @TableField("update_time")
+    private LocalDateTime updateTime;
 
 
 }
