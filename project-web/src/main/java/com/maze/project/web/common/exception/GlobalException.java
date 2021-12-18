@@ -12,9 +12,8 @@ public class GlobalException extends RuntimeException{
 
     private Integer errorCode;
 
-    public GlobalException(String message, String errorMessage) {
+    public GlobalException(String message) {
         super(message);
-        this.errorMessage = errorMessage;
     }
 
     public GlobalException(String message, String errorMessage, Integer errorCode) {

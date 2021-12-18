@@ -1,17 +1,12 @@
 package com.maze.project.web.controller;
 
-import com.maze.project.web.common.constant.CommonConstant;
 import com.maze.project.web.dto.BaseDTO;
+import com.maze.project.web.dto.UserInfoDTO;
+import com.maze.project.web.service.UserInfoService;
+import com.maze.project.web.vo.GetUserInfoVO;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 
 @Slf4j
@@ -20,22 +15,15 @@ import java.util.Map;
 @RequestMapping(value = "/user")
 public class UserController {
 
-    @GetMapping("login")
-    public BaseDTO login(){
-        Map<String, String> map = new HashMap<>();
-        map.put("token", "123456789");
+    private final UserInfoService userInfoService;
 
-        return BaseDTO.ok().data(map);
+    public UserController(UserInfoService userInfoService) {
+        this.userInfoService = userInfoService;
     }
 
-    @GetMapping("info")
-    public BaseDTO info(){
-        Map<String, Object> map = new HashMap<>();
-        List<String> list = new ArrayList<>();
-        list.add("admin");
-        map.put("roles", list);
-        map.put("name", "maze");
-        map.put("avatar", CommonConstant.AVATAR);
-        return BaseDTO.ok().data(map);
+    @PostMapping("info")
+    public BaseDTO info(@Validated @RequestBody GetUserInfoVO getUserInfoVO){
+        UserInfoDTO userInfoDTO = userInfoService.getUserInfo(getUserInfoVO);
+        return BaseDTO.ok().data(userInfoDTO);
     }
 }

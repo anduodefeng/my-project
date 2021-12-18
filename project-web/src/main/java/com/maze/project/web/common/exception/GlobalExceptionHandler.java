@@ -1,6 +1,5 @@
 package com.maze.project.web.common.exception;
 
-import com.maze.project.web.common.enums.ResponseCodeEnum;
 import com.maze.project.web.common.util.ExceptionUtil;
 import com.maze.project.web.dto.BaseDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +18,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(GlobalException.class)
     public BaseDTO handException(Exception e){
         log.error(ExceptionUtil.getMessage(e));
-        return BaseDTO.error().message(ResponseCodeEnum.ERROR.getDescription());
+        return BaseDTO.error().message(e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
