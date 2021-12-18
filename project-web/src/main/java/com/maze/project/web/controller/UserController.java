@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 
 @Slf4j
-@CrossOrigin(maxAge = 3600)
 @RestController
 @RequestMapping(value = "/user")
 public class UserController {

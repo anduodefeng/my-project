@@ -7,13 +7,11 @@ import com.maze.project.web.dto.LoginDTO;
 import com.maze.project.web.service.LoginService;
 import com.maze.project.web.vo.LoginVO;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@CrossOrigin(maxAge = 3600)
 public class LoginController {
 
     private final LoginService loginService;
