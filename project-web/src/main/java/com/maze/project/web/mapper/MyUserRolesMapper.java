@@ -1,6 +1,6 @@
 package com.maze.project.web.mapper;
 
-import com.maze.project.web.entity.MyRoles;
+import com.maze.project.web.entity.MyUserRoles;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -13,6 +13,6 @@ import org.apache.ibatis.annotations.Mapper;
  * @since 2021-12-18
  */
 @Mapper
-public interface MyRolesMapper extends BaseMapper<MyRoles> {
+public interface MyUserRolesMapper extends BaseMapper<MyUserRoles> {
 
 }

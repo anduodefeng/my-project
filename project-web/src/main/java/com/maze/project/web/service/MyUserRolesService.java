@@ -1,6 +1,6 @@
 package com.maze.project.web.service;
 
-import com.maze.project.web.entity.MyRoles;
+import com.maze.project.web.entity.MyUserRoles;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author maze
  * @since 2021-12-18
  */
-public interface MyRolesService extends IService<MyRoles> {
+public interface MyUserRolesService extends IService<MyUserRoles> {
 
 }

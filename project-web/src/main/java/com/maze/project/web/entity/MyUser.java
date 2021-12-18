@@ -4,15 +4,14 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-
 /**
  * <p>
- * 权限表
+ * 用户表
  * </p>
  *
  * @author maze
@@ -20,22 +19,25 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
-@TableName("my_roles")
-public class MyRoles implements Serializable {
+@TableName("my_user")
+public class MyUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    @TableField("name")
-    private String name;
+    /**
+     * 用户名
+     */
+    @TableField("username")
+    private String username;
 
     /**
-     * 权限代码
+     * 密码
      */
-    @TableField("code")
-    private String code;
+    @TableField("password")
+    private String password;
 
     @TableField("create_time")
     private LocalDateTime createTime;

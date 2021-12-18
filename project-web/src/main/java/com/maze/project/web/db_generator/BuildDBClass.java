@@ -16,12 +16,9 @@ public class BuildDBClass {
     public static void main(String[] args) {
 
         String[] tables = new String[]{
-                "my_fund",
-                "my_fund_detail",
-                "my_fund_portfolio",
-                "my_fund_portfolio_detail",
-                "my_invest_account",
-                "my_roles"
+                "my_user",
+                "my_roles",
+                "my_user_roles"
         };
 
         FastAutoGenerator.create(
