@@ -4,11 +4,12 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * <p>
@@ -27,12 +28,6 @@ public class MyCashDetail implements Serializable {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
-
-    /**
-     * 银行id
-     */
-    @TableField("bank_id")
-    private Integer bankId;
 
     /**
      * 银行名称

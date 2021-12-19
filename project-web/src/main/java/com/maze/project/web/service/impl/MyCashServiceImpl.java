@@ -14,6 +14,8 @@ import com.maze.project.web.service.MyCashService;
 import com.maze.project.web.vo.cash.CashPageVO;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,5 +52,25 @@ public class MyCashServiceImpl extends ServiceImpl<MyCashMapper, MyCash> impleme
         cashPageDTO.setCashList(cashDTOList);
 
         return cashPageDTO;
+    }
+
+    @Override
+    public boolean updateCash(String bankName, String changeMoney) {
+
+        MyCash myCash = getOne(Wrappers.<MyCash>lambdaQuery().eq(MyCash::getBankName, bankName));
+        if (null != myCash){
+            BigDecimal change = new BigDecimal(changeMoney);
+            BigDecimal result = myCash.getAmount().add(change);
+            myCash.setAmount(result);
+            myCash.setUpdateTime(LocalDateTime.now());
+        }else {
+            myCash = new MyCash();
+            myCash.setBankName(bankName);
+            myCash.setAmount(new BigDecimal(changeMoney));
+            myCash.setCreateTime(LocalDateTime.now());
+            myCash.setUpdateTime(LocalDateTime.now());
+        }
+
+        return saveOrUpdate(myCash);
     }
 }

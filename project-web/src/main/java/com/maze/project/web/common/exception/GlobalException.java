@@ -1,5 +1,6 @@
 package com.maze.project.web.common.exception;
 
+import com.maze.project.web.common.enums.ResponseCodeEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -14,6 +15,12 @@ public class GlobalException extends RuntimeException{
 
     public GlobalException(String message) {
         super(message);
+    }
+
+    public GlobalException(ResponseCodeEnum responseCodeEnum) {
+        super(responseCodeEnum.getDescription());
+        this.errorCode = responseCodeEnum.getCode();
+        this.errorMessage = responseCodeEnum.getDescription();
     }
 
     public GlobalException(String message, String errorMessage, Integer errorCode) {

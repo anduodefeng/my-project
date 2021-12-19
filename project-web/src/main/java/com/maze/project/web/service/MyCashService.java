@@ -17,4 +17,6 @@ import com.maze.project.web.vo.cash.CashPageVO;
 public interface MyCashService extends IService<MyCash> {
 
     CashPageDTO getCashPage(CashPageVO cashPageVO);
+
+    boolean updateCash(String bankName, String changeMoney);
 }

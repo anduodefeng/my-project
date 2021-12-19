@@ -16,9 +16,9 @@ import java.util.List;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(GlobalException.class)
-    public BaseDTO handGlobalException(Exception e){
-        log.error(ExceptionUtil.getMessage(e));
-        return BaseDTO.error().message(e.getMessage());
+    public BaseDTO handGlobalException(GlobalException e){
+        log.error(e.getErrorMessage());
+        return BaseDTO.error().code(e.getErrorCode()).message(e.getErrorMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

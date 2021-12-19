@@ -4,7 +4,11 @@ import com.maze.project.web.entity.MyCashDetail;
 import com.maze.project.web.mapper.MyCashDetailMapper;
 import com.maze.project.web.service.MyCashDetailService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.maze.project.web.vo.cash.CashChangeVO;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -17,4 +21,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class MyCashDetailServiceImpl extends ServiceImpl<MyCashDetailMapper, MyCashDetail> implements MyCashDetailService {
 
+    @Override
+    public boolean change(CashChangeVO cashChangeVO) {
+        MyCashDetail myCashDetail = new MyCashDetail();
+        myCashDetail.setBankName(cashChangeVO.getBankName());
+        myCashDetail.setChangeAmount(new BigDecimal(cashChangeVO.getChangeMoney()));
+        myCashDetail.setReason(cashChangeVO.getReason());
+        myCashDetail.setCreateTime(LocalDateTime.now());
+
+        return save(myCashDetail);
+    }
 }

@@ -2,6 +2,7 @@ package com.maze.project.web.service;
 
 import com.maze.project.web.entity.MyCashDetail;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.maze.project.web.vo.cash.CashChangeVO;
 
 /**
  * <p>
@@ -13,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface MyCashDetailService extends IService<MyCashDetail> {
 
+    boolean change(CashChangeVO cashChangeVO);
 }
