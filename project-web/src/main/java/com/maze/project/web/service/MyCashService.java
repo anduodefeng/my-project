@@ -6,6 +6,8 @@ import com.maze.project.web.dto.cash.CashPageDTO;
 import com.maze.project.web.entity.MyCash;
 import com.maze.project.web.vo.cash.CashPageVO;
 
+import java.util.List;
+
 /**
  * <p>
  * 现金表 服务类
@@ -19,4 +21,6 @@ public interface MyCashService extends IService<MyCash> {
     CashPageDTO getCashPage(CashPageVO cashPageVO);
 
     boolean updateCash(String bankName, String changeMoney);
+
+    List<String> getBanksName();
 }

@@ -1,14 +1,24 @@
 package com.maze.project.web.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.maze.project.web.common.constant.CommonConstant;
+import com.maze.project.web.dto.cash.DetailDTO;
+import com.maze.project.web.dto.cash.DetailPageDTO;
 import com.maze.project.web.entity.MyCashDetail;
 import com.maze.project.web.mapper.MyCashDetailMapper;
 import com.maze.project.web.service.MyCashDetailService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.maze.project.web.vo.cash.CashChangeVO;
+import com.maze.project.web.vo.cash.DetailPageVO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -30,5 +40,25 @@ public class MyCashDetailServiceImpl extends ServiceImpl<MyCashDetailMapper, MyC
         myCashDetail.setCreateTime(LocalDateTime.now());
 
         return save(myCashDetail);
+    }
+
+    @Override
+    public DetailPageDTO getDetailPage(DetailPageVO detailPageVO) {
+        List<DetailDTO> list = new ArrayList<>();
+        Page<MyCashDetail> page = new Page<>(detailPageVO.getPage(), detailPageVO.getPageSize());
+        IPage<MyCashDetail> detailIPage = page(page, Wrappers.<MyCashDetail>lambdaQuery()
+                .eq(MyCashDetail::getBankName, detailPageVO.getBankName()).orderByDesc(MyCashDetail::getCreateTime));
+        list = detailIPage.getRecords().stream().map(myCashDetail -> {
+            DetailDTO detailDTO = new DetailDTO();
+            detailDTO.setBankName(myCashDetail.getBankName());
+            detailDTO.setAmount(CommonConstant.DECIMAL_FORMAT.format(myCashDetail.getChangeAmount()));
+            detailDTO.setCreateTime(myCashDetail.getCreateTime());
+            return detailDTO;
+        }).collect(Collectors.toList());
+        DetailPageDTO detailPageDTO = new DetailPageDTO();
+        detailPageDTO.setDetailList(list);
+        detailPageDTO.setCurrentPage(detailPageVO.getPage());
+        detailPageDTO.setTotalNum(detailIPage.getTotal());
+        return detailPageDTO;
     }
 }

@@ -73,4 +73,12 @@ public class MyCashServiceImpl extends ServiceImpl<MyCashMapper, MyCash> impleme
 
         return saveOrUpdate(myCash);
     }
+
+    @Override
+    public List<String> getBanksName() {
+
+        List<MyCash> myCashes = list(Wrappers.<MyCash>lambdaQuery().select(MyCash::getBankName).groupBy(MyCash::getBankName));
+        List<String> bankNames = myCashes.stream().map(MyCash::getBankName).collect(Collectors.toList());
+        return bankNames;
+    }
 }

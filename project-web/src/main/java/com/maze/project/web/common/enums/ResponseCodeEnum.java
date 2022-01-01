@@ -8,6 +8,7 @@ public enum ResponseCodeEnum {
     ADD_CASH_DETAIL_ERROR(2002, "增加现金明细失败"),
     UPDATE_CASH_ERROR(2003, "更新现金余额失败"),
     RECORD_CASH_CHANGE_EXCEPTION(2004, "记录现金明细异常"),
+    GET_CASH_BANKNAMES(2005, "查询现金银行卡异常"),
     ERROR(9999, "系统错误");
 
     //2开头的，系统错误
