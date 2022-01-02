@@ -4,11 +4,17 @@ public enum ResponseCodeEnum {
 
     SUCCESS(1000, "成功"),
     LOGIN_ERROR(2000, "用户名&密码输出错误"),
-    FIND_CASH_PAGE_ERROR(2001, "分页查询现金异常"),
+    FIND_CASH_PAGE_ERROR(2001, "分页查询现金失败"),
     ADD_CASH_DETAIL_ERROR(2002, "增加现金明细失败"),
     UPDATE_CASH_ERROR(2003, "更新现金余额失败"),
-    RECORD_CASH_CHANGE_EXCEPTION(2004, "记录现金明细异常"),
-    GET_CASH_BANKNAMES(2005, "查询现金银行卡异常"),
+    RECORD_CASH_CHANGE_EXCEPTION(2004, "记录现金明细失败"),
+    GET_CASH_BANK_NAMES_ERROR(2005, "查询现金银行卡失败"),
+    GET_FUND_PAGE_ERROR(2006, "分页查询基金失败"),
+    UPDATE_FUND_ERROR(2007, "更新基金失败"),
+    UPDATE_FUND_DETAIL_ERROOR(2008, "更新基金详情失败"),
+    GET_FUNDS_INFO_ERROR(2009, "查询基金分类信息失败"),
+    GET_FUND_INFO_ERROR(2009, "查询单个基金信息失败"),
+    RECORD_FUND_CHANGE_EXCEPTION(2010, "记录基金明细失败"),
     ERROR(9999, "系统错误");
 
     //2开头的，系统错误

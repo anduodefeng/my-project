@@ -2,7 +2,10 @@ package com.maze.project.web.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.maze.project.web.dto.fund.FundDetailPageDTO;
 import com.maze.project.web.entity.MyFundDetail;
+import com.maze.project.web.vo.fund.FundChangeVO;
+import com.maze.project.web.vo.fund.FundDetailPageVO;
 
 /**
  * <p>
@@ -14,4 +17,7 @@ import com.maze.project.web.entity.MyFundDetail;
  */
 public interface MyFundDetailService extends IService<MyFundDetail> {
 
+    boolean change(FundChangeVO fundChangeVO);
+
+    FundDetailPageDTO getFundDetail(FundDetailPageVO fundDetailPageVO);
 }

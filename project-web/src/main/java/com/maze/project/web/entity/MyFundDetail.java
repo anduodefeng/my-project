@@ -44,7 +44,7 @@ public class MyFundDetail implements Serializable {
     private String fundName;
 
     /**
-     * 基金净值
+     * 基金份额
      */
     @TableField("fund_shares")
     private BigDecimal fundShares;
@@ -56,16 +56,10 @@ public class MyFundDetail implements Serializable {
     private BigDecimal changeMoney;
 
     /**
-     * 旧基金价值
+     * 基金净值
      */
-    @TableField("old_fund_money")
-    private BigDecimal oldFundMoney;
-
-    /**
-     * 新基金价值
-     */
-    @TableField("new_fund_money")
-    private BigDecimal newFundMoney;
+    @TableField("fund_worth")
+    private BigDecimal fundWorth;
 
     @TableField("create_time")
     private LocalDateTime createTime;
@@ -76,5 +70,10 @@ public class MyFundDetail implements Serializable {
     @TableField("remark")
     private String remark;
 
+    /**
+     * 类型 0-本金变动 1-资产更新
+     */
+    @TableField("type")
+    private Integer type;
 
 }

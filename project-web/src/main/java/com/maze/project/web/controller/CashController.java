@@ -49,6 +49,7 @@ public class CashController {
         try {
             cashPageDTO = cashService.getCashPage(cashPageVO);
         }catch (Exception e){
+            log.error("============分页查询现金列表异常==========={}", ExceptionUtil.getMessage(e));
             throw new GlobalException(ResponseCodeEnum.FIND_CASH_PAGE_ERROR);
         }
 
@@ -116,7 +117,7 @@ public class CashController {
             detailPageDTO = cashDetailService.getDetailPage(detailPageVO);
         }catch (Exception e){
             log.error("============查询现金银行卡异常==========={}", ExceptionUtil.getMessage(e));
-            throw new GlobalException(ResponseCodeEnum.RECORD_CASH_CHANGE_EXCEPTION);
+            throw new GlobalException(ResponseCodeEnum.GET_CASH_BANK_NAMES_ERROR);
         }
         return BaseDTO.ok().data(detailPageDTO);
     }

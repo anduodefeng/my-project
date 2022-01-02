@@ -79,5 +79,22 @@ public class MyFund implements Serializable {
     @TableField("update_time")
     private LocalDateTime updateTime;
 
+    /**
+     * 本金
+     */
+    @TableField("principal")
+    private BigDecimal principal;
+
+    /**
+     * 类型 0-指数基金 1-主动基金
+     */
+    @TableField("type")
+    private Integer type;
+
+    /**
+     * 盈利
+     */
+    @TableField("profit")
+    private BigDecimal profit;
 
 }
