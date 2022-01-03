@@ -20,7 +20,9 @@ public class FundDetailDTO {
 
     private String type;
 
-    private String remark;
+    private String money;
+
+    private String profitRate;
 
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private LocalDateTime createTime;

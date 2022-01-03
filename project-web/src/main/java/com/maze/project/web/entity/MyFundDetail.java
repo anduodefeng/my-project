@@ -76,4 +76,10 @@ public class MyFundDetail implements Serializable {
     @TableField("type")
     private Integer type;
 
+    @TableField("new_money")
+    private BigDecimal newMoney;
+
+    @TableField("profit_rate")
+    private BigDecimal profitRate;
+
 }

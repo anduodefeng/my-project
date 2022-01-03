@@ -20,6 +20,7 @@ import com.maze.project.web.vo.fund.FundPageVO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,8 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
                 fundDTO.setProfit(CommonConstant.DECIMAL_FORMAT.format(myFund.getProfit()));
                 fundDTO.setCreateTime(myFund.getCreateTime());
                 fundDTO.setUpdateTime(myFund.getUpdateTime());
+                BigDecimal rate = myFund.getProfit().divide(myFund.getPrincipal(), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+                fundDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(rate));
                 return fundDTO;
             }).collect(Collectors.toList());
         }
