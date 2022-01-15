@@ -47,12 +47,6 @@ public class MyFundPortfolioDetail implements Serializable {
     private BigDecimal changeMoney;
 
     /**
-     * 原资产
-     */
-    @TableField("old_assets")
-    private BigDecimal oldAssets;
-
-    /**
      * 新资产
      */
     @TableField("new_assets")

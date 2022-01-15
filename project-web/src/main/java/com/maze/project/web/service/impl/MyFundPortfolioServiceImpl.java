@@ -20,7 +20,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -39,7 +41,7 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
         List<PortfolioDTO> list = new ArrayList<>();
         Page<MyFundPortfolio> page = new Page<>(portfolioPageVO.getPage(), portfolioPageVO.getPageSize());
         IPage<MyFundPortfolio> iPage = page(page, Wrappers.<MyFundPortfolio>lambdaQuery()
-                .eq(MyFundPortfolio::getType, portfolioPageVO.getType())
+                .eq(MyFundPortfolio::getAccountId, portfolioPageVO.getAccountId())
                 .orderByDesc(MyFundPortfolio::getProfitRate));
         for (MyFundPortfolio fundPortfolio : iPage.getRecords()){
             PortfolioDTO portfolioDTO = new PortfolioDTO();
@@ -58,7 +60,7 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
     }
 
     @Override
-    public boolean updatePortfolio(PortfolioChangeVO portfolioChangeVO) {
+    public Map<String, Object> updatePortfolio(PortfolioChangeVO portfolioChangeVO) {
         MyFundPortfolio portfolio = getById(portfolioChangeVO.getPortfolioId());
         if (null != portfolio){
             portfolio.setMoney(portfolio.getMoney().add(new BigDecimal(portfolioChangeVO.getChangeMoney())));
@@ -72,13 +74,19 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
             portfolio.setName(portfolioChangeVO.getName());
             portfolio.setMoney(new BigDecimal(portfolioChangeVO.getChangeMoney()));
             portfolio.setPrincipal(new BigDecimal(portfolioChangeVO.getChangeMoney()));
+            portfolio.setAccountId(Integer.parseInt(portfolioChangeVO.getAccountId()));
+            portfolio.setAccountName(portfolioChangeVO.getAccountName());
             portfolio.setCreateTime(LocalDateTime.now());
             portfolio.setProfit(BigDecimal.ZERO);
             portfolio.setProfitRate(BigDecimal.ZERO);
         }
         portfolio.setType(Integer.parseInt(portfolioChangeVO.getType()));
         portfolio.setUpdateTime(LocalDateTime.now());
-        return saveOrUpdate(portfolio);
+        boolean result = saveOrUpdate(portfolio);
+        Map<String, Object> map = new HashMap<>();
+        map.put("result", result);
+        map.put("portfolio", portfolio);
+        return map;
     }
 
     @Override

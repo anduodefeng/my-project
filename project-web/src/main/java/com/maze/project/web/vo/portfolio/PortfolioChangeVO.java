@@ -16,6 +16,10 @@ public class PortfolioChangeVO {
     private String reason;
     @NotBlank(message = "changeType不能为空")
     private String changeType;
+    @NotBlank(message = "accountId不能为空")
+    private String accountId;
+    @NotBlank(message = "accountName不能为空")
+    private String accountName;
     /**
      * 组合类型 0-稳健 1-积极  2-定投
      */

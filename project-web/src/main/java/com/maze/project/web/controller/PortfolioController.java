@@ -1,5 +1,6 @@
 package com.maze.project.web.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.maze.project.web.common.enums.ResponseCodeEnum;
 import com.maze.project.web.common.exception.GlobalException;
 import com.maze.project.web.common.util.ExceptionUtil;
@@ -8,6 +9,7 @@ import com.maze.project.web.dto.portfolio.PortfolioDTO;
 import com.maze.project.web.dto.portfolio.PortfolioDetailPageDTO;
 import com.maze.project.web.dto.portfolio.PortfolioInfoListDTO;
 import com.maze.project.web.dto.portfolio.PortfolioPageDTO;
+import com.maze.project.web.entity.MyFundPortfolio;
 import com.maze.project.web.service.MyFundPortfolioDetailService;
 import com.maze.project.web.service.MyFundPortfolioService;
 import com.maze.project.web.vo.portfolio.*;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -63,14 +67,19 @@ public class PortfolioController {
     @Transactional(rollbackFor = Exception.class)
     public BaseDTO recordPortfolioChange(@Validated @RequestBody PortfolioChangeVO portfolioChangeVO){
         try {
-            boolean result = portfolioDetailService.change(portfolioChangeVO);
+            Map<String, Object> map = portfolioService.updatePortfolio(portfolioChangeVO);
+            boolean result = (boolean) map.get("result");
+            MyFundPortfolio portfolio = (MyFundPortfolio) map.get("portfolio");
             if (result){
-                result = portfolioService.updatePortfolio(portfolioChangeVO);
+                if (StrUtil.isBlank(portfolioChangeVO.getPortfolioId())){
+                    portfolioChangeVO.setPortfolioId(String.valueOf(portfolio.getId()));
+                }
+                result = portfolioDetailService.change(portfolioChangeVO);
                 if (!result){
-                    throw new GlobalException(ResponseCodeEnum.UPDATE_FUND_ERROR);
+                    throw new GlobalException(ResponseCodeEnum.UPDATE_FUND_DETAIL_ERROOR);
                 }
             }else {
-                throw new GlobalException(ResponseCodeEnum.UPDATE_FUND_DETAIL_ERROOR);
+                throw new GlobalException(ResponseCodeEnum.UPDATE_FUND_ERROR);
             }
         }catch (Exception e){
             log.error("============记录现金明细异常==========={}", ExceptionUtil.getMessage(e));

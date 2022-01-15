@@ -9,6 +9,8 @@ import com.maze.project.web.entity.MyFundPortfolio;
 import com.maze.project.web.vo.portfolio.PortfolioChangeVO;
 import com.maze.project.web.vo.portfolio.PortfolioPageVO;
 
+import java.util.Map;
+
 /**
  * <p>
  * 基金组合表 服务类
@@ -21,7 +23,7 @@ public interface MyFundPortfolioService extends IService<MyFundPortfolio> {
 
     PortfolioPageDTO getPortfolioPage(PortfolioPageVO portfolioPageVO);
 
-    boolean updatePortfolio(PortfolioChangeVO portfolioChangeVO);
+    Map<String, Object> updatePortfolio(PortfolioChangeVO portfolioChangeVO);
 
     PortfolioInfoListDTO getPortfolioInfos(String accountId);
 

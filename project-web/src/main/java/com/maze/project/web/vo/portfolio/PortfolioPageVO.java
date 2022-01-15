@@ -10,6 +10,6 @@ import javax.validation.constraints.NotNull;
 @Data
 public class PortfolioPageVO extends BasePageVO {
 
-    @NotNull(message = "type不能为空")
-    private Integer type;
+    @NotNull(message = "accountId不能为空")
+    private Integer accountId;
 }
