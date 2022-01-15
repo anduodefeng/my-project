@@ -15,6 +15,10 @@ public enum ResponseCodeEnum {
     GET_FUNDS_INFO_ERROR(2009, "查询基金分类信息失败"),
     GET_FUND_INFO_ERROR(2009, "查询单个基金信息失败"),
     RECORD_FUND_CHANGE_EXCEPTION(2010, "记录基金明细失败"),
+    GET_PORTFOLIO_PAGE_ERROR(2011, "分页查询投顾组合失败"),
+    GET_PORTFOLIOS_INFO_ERROR(2012, "查询组合分类异常"),
+    GET_PORTFOLIO_INFO_ERROR(2012, "查询单个组合信息异常"),
+    GET_PORTFOLIO_CHANGE_ERROR(2013, "查询组合变动异常"),
     ERROR(9999, "系统错误");
 
     //2开头的，系统错误

@@ -60,6 +60,28 @@ public class MyFundPortfolio implements Serializable {
      */
     @TableField("account_name")
     private String accountName;
+    /**
+     * 本金
+     */
+    @TableField("principal")
+    private BigDecimal principal;
+    /**
+     * 盈利
+     */
+    @TableField("profit")
+    private BigDecimal profit;
+
+    /**
+     * 类型 0-稳健 1-积极 2-定投
+     */
+    @TableField("type")
+    private Integer type;
+
+    /**
+     * 收益率
+     */
+    @TableField("profit_rate")
+    private BigDecimal profitRate;
 
 
 }

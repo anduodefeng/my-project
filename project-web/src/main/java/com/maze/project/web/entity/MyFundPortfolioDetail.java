@@ -67,5 +67,15 @@ public class MyFundPortfolioDetail implements Serializable {
     @TableField("remark")
     private String remark;
 
+    /**
+     * 收益率
+     */
+    @TableField("profit_rate")
+    private BigDecimal profitRate;
 
+    /**
+     * 变动类型 0-转入or转出 1-日常更新
+     */
+    @TableField("type")
+    private Integer type;
 }
