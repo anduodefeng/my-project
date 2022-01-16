@@ -10,5 +10,5 @@ import java.util.List;
 @Data
 public class PortfolioDetailPageDTO extends BasePageDTO {
 
-    List<PortfolioDetailDTO> portfolioDetailDTOS;
+    List<PortfolioDetailDTO> detailList;
 }

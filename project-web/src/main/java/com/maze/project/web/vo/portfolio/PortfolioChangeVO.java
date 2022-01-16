@@ -13,7 +13,7 @@ public class PortfolioChangeVO {
     @NotBlank(message = "变动金额不能为空")
     private String changeMoney;
     @NotBlank(message = "原因不能为空")
-    private String reason;
+    private String remark;
     @NotBlank(message = "changeType不能为空")
     private String changeType;
     @NotBlank(message = "accountId不能为空")

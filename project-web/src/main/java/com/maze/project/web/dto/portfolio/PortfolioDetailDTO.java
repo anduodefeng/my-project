@@ -12,7 +12,9 @@ public class PortfolioDetailDTO {
 
     private String changeMoney;
 
-    private String type;
+    private String changeType;
+
+    private String profitRate;
 
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private LocalDateTime createTime;

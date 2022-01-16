@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 @Data
 public class PortfolioDTO {
 
+    private String id;
+
     private String name;
 
     private String money;
@@ -17,6 +19,8 @@ public class PortfolioDTO {
     private String profit;
 
     private String profitRate;
+
+    private String type;
 
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private LocalDateTime createTime;

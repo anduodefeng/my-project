@@ -55,7 +55,7 @@ public class MyFundPortfolioDetailServiceImpl extends ServiceImpl<MyFundPortfoli
         portfolioDetail.setFundPortfolioName(portfolioChangeVO.getName());
         portfolioDetail.setChangeMoney(new BigDecimal(portfolioChangeVO.getChangeMoney()));
         portfolioDetail.setType(Integer.parseInt(portfolioChangeVO.getChangeType()));
-        portfolioDetail.setRemark(portfolioChangeVO.getReason());
+        portfolioDetail.setRemark(portfolioChangeVO.getRemark());
         portfolioDetail.setCreateTime(LocalDateTime.now());
         if (null == lastDetail){
             portfolioDetail.setNewAssets(new BigDecimal(portfolioChangeVO.getChangeMoney()));
@@ -86,15 +86,16 @@ public class MyFundPortfolioDetailServiceImpl extends ServiceImpl<MyFundPortfoli
         for (MyFundPortfolioDetail myFundPortfolioDetail : portfolioDetailIPage.getRecords()){
             PortfolioDetailDTO portfolioDetailDTO = new PortfolioDetailDTO();
             portfolioDetailDTO.setName(myFundPortfolioDetail.getFundPortfolioName());
-            portfolioDetailDTO.setType(String.valueOf(myFundPortfolioDetail.getType()));
+            portfolioDetailDTO.setChangeType(String.valueOf(myFundPortfolioDetail.getType()));
             portfolioDetailDTO.setChangeMoney(CommonConstant.DECIMAL_FORMAT.format(myFundPortfolioDetail.getChangeMoney()));
             portfolioDetailDTO.setCreateTime(myFundPortfolioDetail.getCreateTime());
+            portfolioDetailDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(myFundPortfolioDetail.getProfitRate()));
             list.add(portfolioDetailDTO);
         }
         PortfolioDetailPageDTO portfolioDetailPageDTO = new PortfolioDetailPageDTO();
         portfolioDetailPageDTO.setCurrentPage(portfolioDetailPageVO.getPage());
         portfolioDetailPageDTO.setTotalNum(portfolioDetailIPage.getTotal());
-        portfolioDetailPageDTO.setPortfolioDetailDTOS(list);
+        portfolioDetailPageDTO.setDetailList(list);
         return portfolioDetailPageDTO;
     }
 }

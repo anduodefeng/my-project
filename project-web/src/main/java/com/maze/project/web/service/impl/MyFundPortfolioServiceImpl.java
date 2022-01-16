@@ -45,11 +45,14 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
                 .orderByDesc(MyFundPortfolio::getProfitRate));
         for (MyFundPortfolio fundPortfolio : iPage.getRecords()){
             PortfolioDTO portfolioDTO = new PortfolioDTO();
+            portfolioDTO.setId(String.valueOf(fundPortfolio.getId()));
             portfolioDTO.setName(fundPortfolio.getName());
             portfolioDTO.setMoney(CommonConstant.DECIMAL_FORMAT.format(fundPortfolio.getMoney()));
             portfolioDTO.setPrincipal(CommonConstant.DECIMAL_FORMAT.format(fundPortfolio.getPrincipal()));
             portfolioDTO.setProfit(CommonConstant.DECIMAL_FORMAT.format(fundPortfolio.getProfit()));
             portfolioDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(fundPortfolio.getProfitRate().multiply(BigDecimal.valueOf(100))));
+            portfolioDTO.setUpdateTime(fundPortfolio.getUpdateTime());
+            portfolioDTO.setCreateTime(fundPortfolio.getCreateTime());
             list.add(portfolioDTO);
         }
         PortfolioPageDTO portfolioPageDTO = new PortfolioPageDTO();
@@ -110,10 +113,12 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
         MyFundPortfolio myFundPortfolio = getById(id);
         PortfolioDTO portfolioDTO = new PortfolioDTO();
         if (null != myFundPortfolio){
+            portfolioDTO.setId(String.valueOf(myFundPortfolio.getId()));
             portfolioDTO.setName(myFundPortfolio.getName());
             portfolioDTO.setMoney(CommonConstant.DECIMAL_FORMAT.format(myFundPortfolio.getMoney()));
             portfolioDTO.setPrincipal(CommonConstant.DECIMAL_FORMAT.format(myFundPortfolio.getPrincipal()));
             portfolioDTO.setProfit(CommonConstant.DECIMAL_FORMAT.format(myFundPortfolio.getProfit()));
+            portfolioDTO.setType(String.valueOf(myFundPortfolio.getType()));
             portfolioDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(myFundPortfolio.getProfitRate()));
             portfolioDTO.setUpdateTime(myFundPortfolio.getUpdateTime());
         }
