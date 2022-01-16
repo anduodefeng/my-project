@@ -3,6 +3,7 @@ package com.maze.project.web.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.maze.project.web.dto.cash.CashPageDTO;
+import com.maze.project.web.dto.cash.ChartDTO;
 import com.maze.project.web.entity.MyCash;
 import com.maze.project.web.vo.cash.CashPageVO;
 
@@ -17,6 +18,8 @@ import java.util.List;
  * @since 2021-12-18
  */
 public interface MyCashService extends IService<MyCash> {
+
+    ChartDTO getChart();
 
     CashPageDTO getCashPage(CashPageVO cashPageVO);
 

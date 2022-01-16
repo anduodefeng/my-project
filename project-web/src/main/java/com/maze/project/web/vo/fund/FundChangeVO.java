@@ -21,6 +21,8 @@ public class FundChangeVO {
     private String type;
     @NotBlank(message = "基金类型不能为空")
     private String fundType;
+    @NotBlank(message = "变动时间不能为空")
+    private String createTime;
 
     private String remark;
 }

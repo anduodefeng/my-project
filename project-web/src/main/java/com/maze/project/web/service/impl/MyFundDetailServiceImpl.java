@@ -1,6 +1,7 @@
 package com.maze.project.web.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -20,7 +21,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,7 +59,7 @@ public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyF
         myFundDetail.setFundWorth(new BigDecimal(fundChangeVO.getWorth()));
         myFundDetail.setType(Integer.parseInt(fundChangeVO.getType()));
         myFundDetail.setRemark(fundChangeVO.getRemark());
-        myFundDetail.setCreateTime(LocalDateTime.now());
+        myFundDetail.setCreateTime(DateUtil.parseLocalDateTime(fundChangeVO.getCreateTime(), "yyyy-MM-dd"));
         if (null == lastDetail){
             myFundDetail.setNewMoney(new BigDecimal(fundChangeVO.getChangeMoney()));
             myFundDetail.setProfitRate(BigDecimal.ZERO);

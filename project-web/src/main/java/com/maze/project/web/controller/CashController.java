@@ -5,6 +5,7 @@ import com.maze.project.web.common.exception.GlobalException;
 import com.maze.project.web.common.util.ExceptionUtil;
 import com.maze.project.web.dto.cash.BankNamesDTO;
 import com.maze.project.web.dto.cash.CashPageDTO;
+import com.maze.project.web.dto.cash.ChartDTO;
 import com.maze.project.web.dto.cash.DetailPageDTO;
 import com.maze.project.web.dto.common.BaseDTO;
 import com.maze.project.web.service.MyCashDetailService;
@@ -15,10 +16,7 @@ import com.maze.project.web.vo.cash.DetailPageVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +32,19 @@ public class CashController {
     public CashController(MyCashService cashService, MyCashDetailService cashDetailService) {
         this.cashService = cashService;
         this.cashDetailService = cashDetailService;
+    }
+
+    @GetMapping("chart")
+    public BaseDTO cashChart(){
+        ChartDTO chartDTO = new ChartDTO();
+        try {
+            chartDTO = cashService.getChart();
+        }catch (Exception e){
+            log.error("=========查询现金图表异常==========");
+            throw new GlobalException(ResponseCodeEnum.FIND_CASH_CHART_ERROR);
+        }
+
+        return BaseDTO.ok().data(chartDTO);
     }
 
     /**
