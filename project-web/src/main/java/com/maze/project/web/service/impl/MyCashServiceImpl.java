@@ -7,7 +7,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.maze.project.web.common.constant.CommonConstant;
 import com.maze.project.web.common.enums.CashEnum;
-import com.maze.project.web.dto.cash.*;
+import com.maze.project.web.dto.cash.CashChartDTO;
+import com.maze.project.web.dto.cash.CashDTO;
+import com.maze.project.web.dto.cash.CashPageDTO;
+import com.maze.project.web.dto.cash.PieItemColor;
+import com.maze.project.web.dto.common.BarValueDTO;
+import com.maze.project.web.dto.common.PieDTO;
 import com.maze.project.web.entity.MyCash;
 import com.maze.project.web.mapper.MyCashMapper;
 import com.maze.project.web.service.MyCashService;
@@ -55,7 +60,7 @@ public class MyCashServiceImpl extends ServiceImpl<MyCashMapper, MyCash> impleme
     }
 
     @Override
-    public ChartDTO getChart() {
+    public CashChartDTO getChart() {
         List<PieDTO> pieList = new ArrayList<>();
         List<String> bankNameList = new ArrayList<>();
         List<BarValueDTO> bankValueList = new ArrayList<>();
@@ -78,7 +83,7 @@ public class MyCashServiceImpl extends ServiceImpl<MyCashMapper, MyCash> impleme
 
             bankNameList.add(cash.getBankName());
         }
-        ChartDTO chartDTO = new ChartDTO();
+        CashChartDTO chartDTO = new CashChartDTO();
         chartDTO.setPieList(pieList);
         chartDTO.setBankNameList(bankNameList);
         chartDTO.setBankValueList(bankValueList);

@@ -5,7 +5,7 @@ import com.maze.project.web.common.exception.GlobalException;
 import com.maze.project.web.common.util.ExceptionUtil;
 import com.maze.project.web.dto.cash.BankNamesDTO;
 import com.maze.project.web.dto.cash.CashPageDTO;
-import com.maze.project.web.dto.cash.ChartDTO;
+import com.maze.project.web.dto.cash.CashChartDTO;
 import com.maze.project.web.dto.cash.DetailPageDTO;
 import com.maze.project.web.dto.common.BaseDTO;
 import com.maze.project.web.service.MyCashDetailService;
@@ -36,7 +36,7 @@ public class CashController {
 
     @GetMapping("chart")
     public BaseDTO cashChart(){
-        ChartDTO chartDTO = new ChartDTO();
+        CashChartDTO chartDTO = new CashChartDTO();
         try {
             chartDTO = cashService.getChart();
         }catch (Exception e){
