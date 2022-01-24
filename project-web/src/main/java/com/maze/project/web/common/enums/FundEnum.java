@@ -5,7 +5,7 @@ public interface FundEnum {
     enum FundTypeEnum implements FundEnum{
         INDEX_FUND(0, "指数基金"),
         ACTIVE_FUND(1, "主动基金"),
-        CURRENCY_FUND(2, "货币基金"),
+        MONETARY_FUND(2, "货币基金"),
         ETF_FUND(3, "ETF基金");
 
         private int code;

@@ -1,7 +1,6 @@
 package com.maze.project.web.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -42,12 +41,11 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
     public FundChartDTO getChart(String fundType) {
         List<PieDTO> pieList = new ArrayList<>();
         List<String> fundNameList = new ArrayList<>();
-        List<BarValueDTO> fundValueList = new ArrayList<>();
-        List<Double> profitRateList = new ArrayList<>();
+        List<BarValueDTO> profitRateList = new ArrayList<>();
         List<MyFund> fundList = list(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getType, fundType));
         for (MyFund fund : fundList){
             PieItemColor pieItemColor = new PieItemColor();
-            String color = randomColor();
+            String color = CommonConstant.randomColor();
             pieItemColor.setColor(color);
 
             PieDTO pieDTO = new PieDTO();
@@ -57,12 +55,11 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
             pieList.add(pieDTO);
 
             BarValueDTO barValueDTO = new BarValueDTO();
-            barValueDTO.setValue(fund.getFundMoney().doubleValue());
+            barValueDTO.setValue(fund.getProfit().multiply(BigDecimal.valueOf(100)).doubleValue());
             barValueDTO.setColor(color);
-            fundValueList.add(barValueDTO);
+            profitRateList.add(barValueDTO);
 
             fundNameList.add(fund.getFundName());
-            profitRateList.add(fund.getProfit().multiply(BigDecimal.valueOf(100)).doubleValue());
         }
         FundChartDTO fundChartDTO = new FundChartDTO();
         fundChartDTO.setPieList(pieList);
@@ -167,10 +164,5 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
             fundDTO.setMoney(CommonConstant.DECIMAL_FORMAT.format(myFund.getFundMoney()));
         }
         return fundDTO;
-    }
-
-    public String randomColor(){
-        int index = RandomUtil.randomInt(52);
-        return CommonConstant.FUND_CHART_COLOR[index];
     }
 }

@@ -7,11 +7,11 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class FundChartDTO {
+public class PortfolioChartDTO {
 
     List<PieDTO> pieList;
 
-    List<String> fundNameList;
+    List<String> portfolioNameList;
 
     List<BarValueDTO> profitRateList;
 }

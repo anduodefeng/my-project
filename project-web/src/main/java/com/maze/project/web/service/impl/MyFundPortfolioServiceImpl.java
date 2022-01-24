@@ -6,6 +6,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.maze.project.web.common.constant.CommonConstant;
 import com.maze.project.web.common.enums.FundEnum;
+import com.maze.project.web.dto.cash.PieItemColor;
+import com.maze.project.web.dto.common.BarValueDTO;
+import com.maze.project.web.dto.common.PieDTO;
+import com.maze.project.web.dto.fund.PortfolioChartDTO;
 import com.maze.project.web.dto.portfolio.PortfolioDTO;
 import com.maze.project.web.dto.portfolio.PortfolioInfoDTO;
 import com.maze.project.web.dto.portfolio.PortfolioInfoListDTO;
@@ -35,6 +39,38 @@ import java.util.Map;
 @Service
 public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMapper, MyFundPortfolio>
         implements MyFundPortfolioService {
+
+    @Override
+    public PortfolioChartDTO getChart(String accountId) {
+        List<PieDTO> pieList = new ArrayList<>();
+        List<String> portfolioNameList = new ArrayList<>();
+        List<BarValueDTO> profitRateList = new ArrayList<>();
+        List<MyFundPortfolio> portfolioList = list(Wrappers.<MyFundPortfolio>lambdaQuery().eq(MyFundPortfolio::getAccountId, accountId));
+        for (MyFundPortfolio portfolio : portfolioList){
+            PieItemColor itemColor = new PieItemColor();
+            String color = CommonConstant.randomColor();
+            itemColor.setColor(color);
+
+            PieDTO pieDTO = new PieDTO();
+            pieDTO.setName(portfolio.getName());
+            pieDTO.setValue(portfolio.getMoney().doubleValue());
+            pieDTO.setItemStyle(itemColor);
+            pieList.add(pieDTO);
+
+            BarValueDTO barValueDTO = new BarValueDTO();
+            barValueDTO.setValue(portfolio.getProfitRate().multiply(BigDecimal.valueOf(100)).doubleValue());
+            barValueDTO.setColor(color);
+
+            profitRateList.add(barValueDTO);
+
+            portfolioNameList.add(portfolio.getName());
+        }
+        PortfolioChartDTO portfolioChartDTO = new PortfolioChartDTO();
+        portfolioChartDTO.setPieList(pieList);
+        portfolioChartDTO.setProfitRateList(profitRateList);
+
+        return portfolioChartDTO;
+    }
 
     @Override
     public PortfolioPageDTO getPortfolioPage(PortfolioPageVO portfolioPageVO) {

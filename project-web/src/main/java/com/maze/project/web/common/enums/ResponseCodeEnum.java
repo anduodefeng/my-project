@@ -20,7 +20,8 @@ public enum ResponseCodeEnum {
     GET_PORTFOLIO_INFO_ERROR(2012, "查询单个组合信息异常"),
     GET_PORTFOLIO_CHANGE_ERROR(2013, "查询组合变动异常"),
     FIND_CASH_CHART_ERROR(2014, "查询现金图表异常"),
-    FIND_FUND_CHART_ERROR(2015, "获取基金图标异常"),
+    FIND_FUND_CHART_ERROR(2015, "查询基金图表异常"),
+    FIND_PORTFOLIO_CHART_ERROR(2016, "查询基金组合图表异常"),
     ERROR(9999, "系统错误");
 
     //2开头的，系统错误

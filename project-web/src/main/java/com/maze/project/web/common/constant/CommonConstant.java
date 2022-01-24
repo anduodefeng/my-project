@@ -1,5 +1,7 @@
 package com.maze.project.web.common.constant;
 
+import cn.hutool.core.util.RandomUtil;
+
 import java.text.DecimalFormat;
 
 public class CommonConstant {
@@ -23,4 +25,9 @@ public class CommonConstant {
         "#f76b8a","#c8e7ed","#ffa5a5","#ffdcf5",
         "#1891ac","#66c6ba","#a82ffc","#d988bc"
     };
+
+    public static String randomColor(){
+        int index = RandomUtil.randomInt(52);
+        return CommonConstant.FUND_CHART_COLOR[index];
+    }
 }

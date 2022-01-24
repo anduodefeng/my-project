@@ -5,6 +5,7 @@ import com.maze.project.web.common.enums.ResponseCodeEnum;
 import com.maze.project.web.common.exception.GlobalException;
 import com.maze.project.web.common.util.ExceptionUtil;
 import com.maze.project.web.dto.common.BaseDTO;
+import com.maze.project.web.dto.fund.PortfolioChartDTO;
 import com.maze.project.web.dto.portfolio.PortfolioDTO;
 import com.maze.project.web.dto.portfolio.PortfolioDetailPageDTO;
 import com.maze.project.web.dto.portfolio.PortfolioInfoListDTO;
@@ -16,10 +17,7 @@ import com.maze.project.web.vo.portfolio.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -34,6 +32,19 @@ public class PortfolioController {
     public PortfolioController(MyFundPortfolioService portfolioService, MyFundPortfolioDetailService portfolioDetailService) {
         this.portfolioService = portfolioService;
         this.portfolioDetailService = portfolioDetailService;
+    }
+
+    @GetMapping("chart/{accountId}")
+    public BaseDTO fundChart(@PathVariable String accountId){
+        PortfolioChartDTO chartDTO = new PortfolioChartDTO();
+        try {
+            chartDTO = portfolioService.getChart(accountId);
+        }catch (Exception e){
+            log.error("=========查询基金组合图表异常==========");
+            throw new GlobalException(ResponseCodeEnum.FIND_PORTFOLIO_CHART_ERROR);
+        }
+
+        return BaseDTO.ok().data(chartDTO);
     }
 
     /**

@@ -2,6 +2,7 @@ package com.maze.project.web.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.maze.project.web.dto.fund.PortfolioChartDTO;
 import com.maze.project.web.dto.portfolio.PortfolioDTO;
 import com.maze.project.web.dto.portfolio.PortfolioInfoListDTO;
 import com.maze.project.web.dto.portfolio.PortfolioPageDTO;
@@ -20,6 +21,8 @@ import java.util.Map;
  * @since 2021-12-18
  */
 public interface MyFundPortfolioService extends IService<MyFundPortfolio> {
+
+    PortfolioChartDTO getChart(String accountId);
 
     PortfolioPageDTO getPortfolioPage(PortfolioPageVO portfolioPageVO);
 
