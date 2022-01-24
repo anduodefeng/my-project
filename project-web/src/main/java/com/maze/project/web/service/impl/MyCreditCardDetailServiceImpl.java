@@ -55,6 +55,7 @@ public class MyCreditCardDetailServiceImpl extends ServiceImpl<MyCreditCardDetai
             detailDTO.setBankName(creditCardDetail.getCreditName());
             detailDTO.setAmount(CommonConstant.DECIMAL_FORMAT.format(creditCardDetail.getChangeAmount()));
             detailDTO.setCreateTime(creditCardDetail.getCreateTime());
+            detailDTO.setRemark(creditCardDetail.getRemark());
             return detailDTO;
         }).collect(Collectors.toList());
         DetailPageDTO detailPageDTO = new DetailPageDTO();

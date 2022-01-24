@@ -82,7 +82,7 @@ public class MyCreditCardServiceImpl extends ServiceImpl<MyCreditCardMapper, MyC
             creditCardList = iPage.getRecords().stream().map(creditCard -> {
                 CreditCardDTO creditCardDTO = new CreditCardDTO();
                 creditCardDTO.setBankName(creditCard.getName());
-                creditCardDTO.setLimit(String.valueOf(creditCard.getLimit()));
+                creditCardDTO.setLimit(String.valueOf(creditCard.getLimitAmount()));
                 creditCardDTO.setLeftAmount(String.valueOf(creditCard.getLeftAmount()));
                 Map<String, String> map = calculateDays(creditCard.getRepaymentDate(), creditCard.getBillDate());
                 creditCardDTO.setBillDate(map.get("billDay"));
@@ -110,7 +110,7 @@ public class MyCreditCardServiceImpl extends ServiceImpl<MyCreditCardMapper, MyC
         }else {
             creditCard = new MyCreditCard();
             creditCard.setName(bankName);
-            creditCard.setLimit(Integer.parseInt(limit));
+            creditCard.setLimitAmount(Integer.parseInt(limit));
             BigDecimal left = new BigDecimal(limit).subtract(new BigDecimal(changeMoney));
             creditCard.setLeftAmount(left);
             creditCard.setBillDate(Integer.parseInt(billDay));
@@ -134,7 +134,7 @@ public class MyCreditCardServiceImpl extends ServiceImpl<MyCreditCardMapper, MyC
         MyCreditCard creditCard = getOne(Wrappers.<MyCreditCard>lambdaQuery().eq(MyCreditCard::getName, bankName));
         if (null != creditCard){
             bankInfoDTO.setBankName(creditCard.getName());
-            bankInfoDTO.setLimit(String.valueOf(creditCard.getLimit()));
+            bankInfoDTO.setLimit(String.valueOf(creditCard.getLimitAmount()));
             bankInfoDTO.setBillDay(String.valueOf(creditCard.getBillDate()));
             bankInfoDTO.setRepayDay(String.valueOf(creditCard.getRepaymentDate()));
         }
@@ -147,18 +147,18 @@ public class MyCreditCardServiceImpl extends ServiceImpl<MyCreditCardMapper, MyC
         String billDay = "";
         long leftDay;
         if (DateTime.now().dayOfMonth() < repayDate){
-            repayDay = DateTime.now().year() + DateTime.now().monthBaseOne() + "" + repayDate;
+            repayDay = DateTime.now().year() + "-" + DateTime.now().monthBaseOne() + "-" + String.format("%02d",repayDate);
             DateTime repay = DateUtil.parse(repayDay, "yyyy-MM-dd");
             leftDay = DateUtil.between(DateTime.now(), repay, DateUnit.DAY);
         }else {
-            repayDay = DateTime.now().year() + (DateTime.now().monthBaseOne()+1) + "" + repayDate;
+            repayDay = DateTime.now().year() + "-" + (DateTime.now().monthBaseOne()+1) + "-" + String.format("%02d",repayDate);
             DateTime repay = DateUtil.parse(repayDay, "yyyy-MM-dd");
             leftDay = DateUtil.between(DateTime.now(), repay, DateUnit.DAY);
         }
         if (DateTime.now().dayOfMonth() < billDate){
-            billDay = DateTime.now().year() + DateTime.now().monthBaseOne() + "" + billDate;
+            billDay = DateTime.now().year() + "-" + DateTime.now().monthBaseOne() + "-" + String.format("%02d", billDate);
         }else {
-            billDay = DateTime.now().year() + (DateTime.now().monthBaseOne()+1) + "" + billDate;
+            billDay = DateTime.now().year() + "-" + (DateTime.now().monthBaseOne()+1) + "-" + String.format("%02d", billDate);
         }
         map.put("repayDay", repayDay);
         map.put("billDay", billDay);

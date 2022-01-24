@@ -37,8 +37,8 @@ public class MyCreditCard implements Serializable {
     /**
      * 信用卡额度
      */
-    @TableField("limit")
-    private Integer limit;
+    @TableField("limit_amount")
+    private Integer limitAmount;
 
     /**
      * 剩余额度

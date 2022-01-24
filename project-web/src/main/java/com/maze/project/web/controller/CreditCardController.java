@@ -16,10 +16,7 @@ import com.maze.project.web.vo.credit_card.DetailPageVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,7 +102,7 @@ public class CreditCardController {
      * @author maze
      * @date: 2021/12/19 16:20
      */
-    @PostMapping(value = "bankNames")
+    @GetMapping(value = "bankNames")
     @Transactional(rollbackFor = Exception.class)
     public BaseDTO getBankNames(){
         List<String> bankNames = new ArrayList<>();
@@ -126,9 +123,9 @@ public class CreditCardController {
      * @author maze
      * @date: 2021/12/19 16:20
      */
-    @PostMapping(value = "bankInfo")
+    @GetMapping(value = "bankInfo/{bankName}")
     @Transactional(rollbackFor = Exception.class)
-    public BaseDTO getBankInfo(String bankName){
+    public BaseDTO getBankInfo(@PathVariable String bankName){
         BankInfoDTO bankInfoDTO = new BankInfoDTO();
         try {
             bankInfoDTO = creditCardService.getBankInfo(bankName);
