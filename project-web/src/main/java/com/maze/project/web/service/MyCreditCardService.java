@@ -1,9 +1,9 @@
 package com.maze.project.web.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.maze.project.web.dto.cash.CashChartDTO;
 import com.maze.project.web.dto.credit_card.BankInfoDTO;
 import com.maze.project.web.dto.credit_card.CreditCardPageDTO;
+import com.maze.project.web.dto.credit_card.CreditChartDTO;
 import com.maze.project.web.entity.MyCreditCard;
 import com.maze.project.web.vo.common.BasePageVO;
 
@@ -19,7 +19,7 @@ import java.util.List;
  */
 public interface MyCreditCardService extends IService<MyCreditCard> {
 
-    CashChartDTO getChart();
+    CreditChartDTO getChart();
 
     CreditCardPageDTO getCreditCardPage(BasePageVO basePageVO);
 

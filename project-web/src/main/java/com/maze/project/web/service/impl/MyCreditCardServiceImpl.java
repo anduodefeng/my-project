@@ -8,14 +8,16 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.maze.project.web.dto.cash.CashChartDTO;
+import com.maze.project.web.common.constant.CommonConstant;
 import com.maze.project.web.dto.common.BarValueDTO;
-import com.maze.project.web.dto.common.PieDTO;
 import com.maze.project.web.dto.credit_card.BankInfoDTO;
 import com.maze.project.web.dto.credit_card.CreditCardDTO;
 import com.maze.project.web.dto.credit_card.CreditCardPageDTO;
+import com.maze.project.web.dto.credit_card.CreditChartDTO;
 import com.maze.project.web.entity.MyCreditCard;
+import com.maze.project.web.entity.MyCreditCardDetail;
 import com.maze.project.web.mapper.MyCreditCardMapper;
+import com.maze.project.web.service.MyCreditCardDetailService;
 import com.maze.project.web.service.MyCreditCardService;
 import com.maze.project.web.vo.common.BasePageVO;
 import org.springframework.stereotype.Service;
@@ -39,37 +41,47 @@ import java.util.stream.Collectors;
 @Service
 public class MyCreditCardServiceImpl extends ServiceImpl<MyCreditCardMapper, MyCreditCard> implements MyCreditCardService {
 
+    private MyCreditCardDetailService creditCardDetailService;
+
+    public MyCreditCardServiceImpl(MyCreditCardDetailService creditCardDetailService) {
+        this.creditCardDetailService = creditCardDetailService;
+    }
 
     @Override
-    public CashChartDTO getChart() {
-        List<PieDTO> pieList = new ArrayList<>();
-        List<String> bankNameList = new ArrayList<>();
-        List<BarValueDTO> bankValueList = new ArrayList<>();
-//        List<MyCash> cashList = list();
-//        for (MyCash cash : cashList){
-//            PieItemColor pieItemColor = new PieItemColor();
-//            String color = CashEnum.CashPieColorEnum.getColor(cash.getBankName());
-//            pieItemColor.setColor(color);
-//
-//            PieDTO pieDTO = new PieDTO();
-//            pieDTO.setName(cash.getBankName());
-//            pieDTO.setValue(cash.getAmount().doubleValue());
-//            pieDTO.setItemStyle(pieItemColor);
-//            pieList.add(pieDTO);
-//
-//            BarValueDTO barValueDTO = new BarValueDTO();
-//            barValueDTO.setValue(cash.getAmount().doubleValue());
-//            barValueDTO.setColor(color);
-//            bankValueList.add(barValueDTO);
-//
-//            bankNameList.add(cash.getBankName());
-//        }
-        CashChartDTO chartDTO = new CashChartDTO();
-        chartDTO.setPieList(pieList);
-        chartDTO.setBankNameList(bankNameList);
-        chartDTO.setBankValueList(bankValueList);
+    public CreditChartDTO getChart() {
+        List<String> monthList = new ArrayList<>();
+        List<BarValueDTO> CMBList = new ArrayList<>();
+        List<BarValueDTO> PABList = new ArrayList<>();
+        for (int i = 1; i < 13; i++){
+            String color = CommonConstant.randomColor();
+            String dateStr = DateTime.now().year() + "-" + String.format("%02d", i);
+            monthList.add(dateStr);
+            DateTime date = DateUtil.parse(dateStr, "yyyy-MM");
+            List<MyCreditCardDetail> creditCardDetails = creditCardDetailService.list(
+                    Wrappers.<MyCreditCardDetail>lambdaQuery().eq(MyCreditCardDetail::getCreditName, "招商银行")
+                            .between(MyCreditCardDetail::getCreateTime, DateUtil.beginOfMonth(date), DateUtil.endOfMonth(date)));
+            BigDecimal total = creditCardDetails.stream().map(MyCreditCardDetail::getChangeAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BarValueDTO cmbValue = new BarValueDTO();
+            cmbValue.setValue(total.doubleValue());
+            cmbValue.setColor(color);
+            CMBList.add(cmbValue);
 
-        return chartDTO;
+            creditCardDetails = creditCardDetailService.list(
+                    Wrappers.<MyCreditCardDetail>lambdaQuery().eq(MyCreditCardDetail::getCreditName, "平安银行")
+                            .between(MyCreditCardDetail::getCreateTime, DateUtil.beginOfMonth(date), DateUtil.endOfMonth(date)));
+            total = creditCardDetails.stream().map(MyCreditCardDetail::getChangeAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BarValueDTO pabValue = new BarValueDTO();
+            pabValue.setValue(total.doubleValue());
+            pabValue.setColor(color);
+            PABList.add(pabValue);
+        }
+
+        CreditChartDTO creditChartDTO = new CreditChartDTO();
+        creditChartDTO.setMonthList(monthList);
+        creditChartDTO.setCMBList(CMBList);
+        creditChartDTO.setPABList(PABList);
+
+        return creditChartDTO;
     }
 
     @Override

@@ -4,10 +4,7 @@ import com.maze.project.web.common.enums.ResponseCodeEnum;
 import com.maze.project.web.common.exception.GlobalException;
 import com.maze.project.web.common.util.ExceptionUtil;
 import com.maze.project.web.dto.common.BaseDTO;
-import com.maze.project.web.dto.credit_card.BankInfoDTO;
-import com.maze.project.web.dto.credit_card.BankNamesDTO;
-import com.maze.project.web.dto.credit_card.CreditCardPageDTO;
-import com.maze.project.web.dto.credit_card.DetailPageDTO;
+import com.maze.project.web.dto.credit_card.*;
 import com.maze.project.web.service.MyCreditCardDetailService;
 import com.maze.project.web.service.MyCreditCardService;
 import com.maze.project.web.vo.common.BasePageVO;
@@ -34,18 +31,18 @@ public class CreditCardController {
         this.creditCardDetailService = creditCardDetailService;
     }
 
-//    @GetMapping("chart")
-//    public BaseDTO cashChart(){
-//        CashChartDTO chartDTO = new CashChartDTO();
-//        try {
-//            chartDTO = cashService.getChart();
-//        }catch (Exception e){
-//            log.error("=========查询现金图表异常==========");
-//            throw new GlobalException(ResponseCodeEnum.FIND_CASH_CHART_ERROR);
-//        }
-//
-//        return BaseDTO.ok().data(chartDTO);
-//    }
+    @GetMapping("chart")
+    public BaseDTO cashChart(){
+        CreditChartDTO chartDTO = new CreditChartDTO();
+        try {
+            chartDTO = creditCardService.getChart();
+        }catch (Exception e){
+            log.error("=========查询信用卡图表异常==========");
+            throw new GlobalException(ResponseCodeEnum.FIND_CREDIT_CARD_CHART_ERROR);
+        }
+
+        return BaseDTO.ok().data(chartDTO);
+    }
 
     /**
      * @description: 分页查询信用卡列表
