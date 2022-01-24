@@ -89,7 +89,7 @@ public class CashController {
             }
         }catch (Exception e){
             log.error("============记录现金明细异常==========={}", ExceptionUtil.getMessage(e));
-            throw new GlobalException(ResponseCodeEnum.RECORD_CASH_CHANGE_EXCEPTION);
+            throw new GlobalException(ResponseCodeEnum.RECORD_CASH_CHANGE_ERROR);
         }
         return BaseDTO.ok();
     }
@@ -109,7 +109,7 @@ public class CashController {
             bankNames = cashService.getBanksName();
         }catch (Exception e){
             log.error("============查询现金银行卡异常==========={}", ExceptionUtil.getMessage(e));
-            throw new GlobalException(ResponseCodeEnum.RECORD_CASH_CHANGE_EXCEPTION);
+            throw new GlobalException(ResponseCodeEnum.RECORD_CASH_CHANGE_ERROR);
         }
         BankNamesDTO bankNamesDTO = new BankNamesDTO();
         bankNamesDTO.setBankNames(bankNames);

@@ -1,4 +1,4 @@
-package com.maze.project.web.dto.cash;
+package com.maze.project.web.dto.common;
 
 import lombok.Data;
 

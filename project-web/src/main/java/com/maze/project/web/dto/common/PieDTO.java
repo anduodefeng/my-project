@@ -1,6 +1,5 @@
 package com.maze.project.web.dto.common;
 
-import com.maze.project.web.dto.cash.PieItemColor;
 import lombok.Data;
 
 @Data
