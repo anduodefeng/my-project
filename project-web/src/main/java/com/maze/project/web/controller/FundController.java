@@ -4,20 +4,14 @@ import com.maze.project.web.common.enums.ResponseCodeEnum;
 import com.maze.project.web.common.exception.GlobalException;
 import com.maze.project.web.common.util.ExceptionUtil;
 import com.maze.project.web.dto.common.BaseDTO;
-import com.maze.project.web.dto.fund.FundDTO;
-import com.maze.project.web.dto.fund.FundDetailPageDTO;
-import com.maze.project.web.dto.fund.FundInfoListDTO;
-import com.maze.project.web.dto.fund.FundPageDTO;
+import com.maze.project.web.dto.fund.*;
 import com.maze.project.web.service.MyFundDetailService;
 import com.maze.project.web.service.MyFundService;
 import com.maze.project.web.vo.fund.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "fund")
@@ -30,6 +24,19 @@ public class FundController {
     public FundController(MyFundService fundService, MyFundDetailService fundDetailService) {
         this.fundService = fundService;
         this.fundDetailService = fundDetailService;
+    }
+
+    @GetMapping("chart/{fundType}")
+    public BaseDTO fundChart(@PathVariable String fundType){
+        FundChartDTO chartDTO = new FundChartDTO();
+        try {
+            chartDTO = fundService.getChart(fundType);
+        }catch (Exception e){
+            log.error("=========查询基金图表异常==========");
+            throw new GlobalException(ResponseCodeEnum.FIND_FUND_CHART_ERROR);
+        }
+
+        return BaseDTO.ok().data(chartDTO);
     }
 
     /**

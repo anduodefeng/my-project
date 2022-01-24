@@ -1,6 +1,7 @@
 package com.maze.project.web.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -8,10 +9,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.maze.project.web.common.constant.CommonConstant;
 import com.maze.project.web.common.enums.FundEnum;
-import com.maze.project.web.dto.fund.FundDTO;
-import com.maze.project.web.dto.fund.FundInfoDTO;
-import com.maze.project.web.dto.fund.FundInfoListDTO;
-import com.maze.project.web.dto.fund.FundPageDTO;
+import com.maze.project.web.dto.cash.PieItemColor;
+import com.maze.project.web.dto.common.BarValueDTO;
+import com.maze.project.web.dto.common.PieDTO;
+import com.maze.project.web.dto.fund.*;
 import com.maze.project.web.entity.MyFund;
 import com.maze.project.web.mapper.MyFundMapper;
 import com.maze.project.web.service.MyFundService;
@@ -36,6 +37,40 @@ import java.util.stream.Collectors;
  */
 @Service
 public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> implements MyFundService {
+
+    @Override
+    public FundChartDTO getChart(String fundType) {
+        List<PieDTO> pieList = new ArrayList<>();
+        List<String> fundNameList = new ArrayList<>();
+        List<BarValueDTO> fundValueList = new ArrayList<>();
+        List<Double> profitRateList = new ArrayList<>();
+        List<MyFund> fundList = list(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getType, fundType));
+        for (MyFund fund : fundList){
+            PieItemColor pieItemColor = new PieItemColor();
+            String color = randomColor();
+            pieItemColor.setColor(color);
+
+            PieDTO pieDTO = new PieDTO();
+            pieDTO.setName(fund.getFundName());
+            pieDTO.setValue(fund.getFundMoney().doubleValue());
+            pieDTO.setItemStyle(pieItemColor);
+            pieList.add(pieDTO);
+
+            BarValueDTO barValueDTO = new BarValueDTO();
+            barValueDTO.setValue(fund.getFundMoney().doubleValue());
+            barValueDTO.setColor(color);
+            fundValueList.add(barValueDTO);
+
+            fundNameList.add(fund.getFundName());
+            profitRateList.add(fund.getProfit().multiply(BigDecimal.valueOf(100)).doubleValue());
+        }
+        FundChartDTO fundChartDTO = new FundChartDTO();
+        fundChartDTO.setPieList(pieList);
+        fundChartDTO.setFundNameList(fundNameList);
+        fundChartDTO.setProfitRateList(profitRateList);
+
+        return fundChartDTO;
+    }
 
     @Override
     public FundPageDTO getFundPage(FundPageVO fundPageVO) {
@@ -132,5 +167,10 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
             fundDTO.setMoney(CommonConstant.DECIMAL_FORMAT.format(myFund.getFundMoney()));
         }
         return fundDTO;
+    }
+
+    public String randomColor(){
+        int index = RandomUtil.randomInt(52);
+        return CommonConstant.FUND_CHART_COLOR[index];
     }
 }

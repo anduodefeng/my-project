@@ -4,7 +4,6 @@ public enum ResponseCodeEnum {
 
     SUCCESS(1000, "成功"),
     LOGIN_ERROR(2000, "用户名&密码输出错误"),
-    FIND_CASH_CHART_ERROR(2014, "查询现金图表异常"),
     FIND_CASH_PAGE_ERROR(2001, "分页查询现金异常"),
     ADD_CASH_DETAIL_ERROR(2002, "增加现金明细异常"),
     UPDATE_CASH_ERROR(2003, "更新现金余额异常"),
@@ -20,6 +19,8 @@ public enum ResponseCodeEnum {
     GET_PORTFOLIOS_INFO_ERROR(2012, "查询组合分类异常"),
     GET_PORTFOLIO_INFO_ERROR(2012, "查询单个组合信息异常"),
     GET_PORTFOLIO_CHANGE_ERROR(2013, "查询组合变动异常"),
+    FIND_CASH_CHART_ERROR(2014, "查询现金图表异常"),
+    FIND_FUND_CHART_ERROR(2015, "获取基金图标异常"),
     ERROR(9999, "系统错误");
 
     //2开头的，系统错误
