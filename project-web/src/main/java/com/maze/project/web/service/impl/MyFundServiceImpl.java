@@ -96,7 +96,7 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
     }
 
     @Override
-    public boolean updateFund(FundChangeVO fundChangeVO, double rate) {
+    public boolean updateFund(FundChangeVO fundChangeVO, BigDecimal rate) {
         MyFund myFund = getOne(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getFundCode, fundChangeVO.getCode()));
         if (null != myFund){
             myFund.setFundMoney(myFund.getFundMoney().add(new BigDecimal(fundChangeVO.getChangeMoney())));
@@ -106,7 +106,7 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
             }else {
                 myFund.setPrincipal(myFund.getPrincipal().add(new BigDecimal(fundChangeVO.getChangeMoney())));
             }
-            myFund.setProfitRate(BigDecimal.valueOf(rate));
+            myFund.setProfitRate(rate);
         }else {
             myFund = new MyFund();
             myFund.setFundCode(fundChangeVO.getCode());

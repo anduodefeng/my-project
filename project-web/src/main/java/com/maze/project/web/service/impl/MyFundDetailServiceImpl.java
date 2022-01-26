@@ -11,16 +11,17 @@ import com.maze.project.web.common.enums.FundEnum;
 import com.maze.project.web.dto.fund.FundDetailChartDTO;
 import com.maze.project.web.dto.fund.FundDetailDTO;
 import com.maze.project.web.dto.fund.FundDetailPageDTO;
+import com.maze.project.web.entity.MyFund;
 import com.maze.project.web.entity.MyFundDetail;
 import com.maze.project.web.mapper.MyFundDetailMapper;
+import com.maze.project.web.mapper.MyFundMapper;
 import com.maze.project.web.service.MyFundDetailService;
 import com.maze.project.web.vo.fund.FundChangeVO;
 import com.maze.project.web.vo.fund.FundDetailPageVO;
-import org.decampo.xirr.Transaction;
-import org.decampo.xirr.Xirr;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,10 +39,16 @@ import java.util.stream.Collectors;
 @Service
 public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyFundDetail> implements MyFundDetailService {
 
+    private final MyFundMapper fundMapper;
+
+    public MyFundDetailServiceImpl(MyFundMapper fundMapper) {
+        this.fundMapper = fundMapper;
+    }
+
     @Override
     public Map<String, Object> change(FundChangeVO fundChangeVO) {
         Map<String, Object> map = new HashMap<>();
-        double profitRate = 0;
+        BigDecimal profitRate = BigDecimal.ZERO;
         MyFundDetail lastDetail = getOne(Wrappers.<MyFundDetail>lambdaQuery()
                         .eq(MyFundDetail::getFundCode, fundChangeVO.getCode())
                         .orderByDesc(MyFundDetail::getCreateTime)
@@ -61,11 +68,11 @@ public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyF
             //记录资产更新时，要同时变更盈利情况和收益率
             if (FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode() == Integer.parseInt(fundChangeVO.getType())){
                 profitRate = calculateRate(myFundDetail);
-                myFundDetail.setProfitRate(BigDecimal.valueOf(profitRate));
+                myFundDetail.setProfitRate(profitRate);
             }else {
                 //如果是记录本金转入转出，就不用更新收益率了，还是上一次的收益率
                 myFundDetail.setProfitRate(lastDetail.getProfitRate());
-                profitRate = lastDetail.getProfitRate().doubleValue();
+                profitRate = lastDetail.getProfitRate();
             }
         }
         boolean result = save(myFundDetail);
@@ -132,21 +139,14 @@ public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyF
     }
 
 
-    private double calculateRate(MyFundDetail myFundDetail){
-        List<MyFundDetail> details = list(Wrappers.<MyFundDetail>lambdaQuery().eq(MyFundDetail::getFundCode, myFundDetail.getFundCode())
-                .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.COST_CHANGE.getCode())
-                .orderByAsc(MyFundDetail::getCreateTime));
-        List<Transaction> transactionList = new ArrayList<>();
-        for (MyFundDetail fundDetail : details){
-            String createTime = DateUtil.format(fundDetail.getCreateTime(), "yyyy-MM-dd");
-            Transaction transaction = new Transaction(fundDetail.getChangeMoney().multiply(BigDecimal.valueOf(-1)).doubleValue(), createTime);
-            transactionList.add(transaction);
+    private BigDecimal calculateRate(MyFundDetail myFundDetail){
+        MyFund fund = fundMapper.selectOne(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getFundCode, myFundDetail.getFundCode()));
+        BigDecimal principal = fund.getPrincipal();
+        BigDecimal newProfit = fund.getProfit().add(myFundDetail.getChangeMoney());
+        BigDecimal rate = BigDecimal.ZERO;
+        if (principal.doubleValue() != 0){
+            rate = newProfit.divide(principal, 4, RoundingMode.HALF_UP);
         }
-        String now = DateUtil.format(myFundDetail.getCreateTime(),"yyyy-MM-dd");
-        Transaction transaction = new Transaction(myFundDetail.getNewMoney().doubleValue(), now);
-        transactionList.add(transaction);
-        double rate = new Xirr(transactionList).xirr();
-
         return rate;
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 @RestController
@@ -74,7 +75,7 @@ public class FundController {
         try {
             Map<String, Object> map = fundDetailService.change(fundChangeVO);
             boolean result = (boolean) map.get("result");
-            double profitRate = (double) map.get("rate");
+            BigDecimal profitRate = (BigDecimal) map.get("rate");
             if (result){
                 result = fundService.updateFund(fundChangeVO, profitRate);
                 if (!result){

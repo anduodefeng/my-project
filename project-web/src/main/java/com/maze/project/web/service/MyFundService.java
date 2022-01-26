@@ -10,6 +10,8 @@ import com.maze.project.web.entity.MyFund;
 import com.maze.project.web.vo.fund.FundChangeVO;
 import com.maze.project.web.vo.fund.FundPageVO;
 
+import java.math.BigDecimal;
+
 /**
  * <p>
  * 我的基金 服务类
@@ -24,7 +26,7 @@ public interface MyFundService extends IService<MyFund> {
 
     FundPageDTO getFundPage(FundPageVO fundPageVO);
 
-    boolean updateFund(FundChangeVO fundChangeVO, double rate);
+    boolean updateFund(FundChangeVO fundChangeVO, BigDecimal rate);
 
     FundInfoListDTO getFundInfos(String fundType);
 
