@@ -20,7 +20,6 @@ import com.maze.project.web.vo.fund.FundPageVO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +54,7 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
             pieList.add(pieDTO);
 
             BarValueDTO barValueDTO = new BarValueDTO();
-            barValueDTO.setValue(fund.getProfit().multiply(BigDecimal.valueOf(100)).doubleValue());
+            barValueDTO.setValue(fund.getProfitRate().multiply(BigDecimal.valueOf(100)).doubleValue());
             barValueDTO.setColor(color);
             profitRateList.add(barValueDTO);
 
@@ -79,15 +78,12 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
                 FundDTO fundDTO = new FundDTO();
                 fundDTO.setCode(myFund.getFundCode());
                 fundDTO.setName(myFund.getFundName());
-                fundDTO.setWorth(String.valueOf(myFund.getFundNetWorth()));
-                fundDTO.setShares(String.valueOf(myFund.getFundShares()));
                 fundDTO.setMoney(CommonConstant.DECIMAL_FORMAT.format(myFund.getFundMoney()));
                 fundDTO.setPrincipal(CommonConstant.DECIMAL_FORMAT.format(myFund.getPrincipal()));
                 fundDTO.setProfit(CommonConstant.DECIMAL_FORMAT.format(myFund.getProfit()));
                 fundDTO.setCreateTime(myFund.getCreateTime());
                 fundDTO.setUpdateTime(myFund.getUpdateTime());
-                BigDecimal rate = myFund.getProfit().divide(myFund.getPrincipal(), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-                fundDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(rate));
+                fundDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(myFund.getProfitRate().multiply(BigDecimal.valueOf(100))));
                 return fundDTO;
             }).collect(Collectors.toList());
         }
@@ -100,31 +96,29 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
     }
 
     @Override
-    public boolean updateFund(FundChangeVO fundChangeVO) {
+    public boolean updateFund(FundChangeVO fundChangeVO, double rate) {
         MyFund myFund = getOne(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getFundCode, fundChangeVO.getCode()));
         if (null != myFund){
-            myFund.setFundNetWorth(new BigDecimal(fundChangeVO.getWorth()));
-            myFund.setFundShares(new BigDecimal(fundChangeVO.getShares()));
             myFund.setFundMoney(myFund.getFundMoney().add(new BigDecimal(fundChangeVO.getChangeMoney())));
             myFund.setUpdateTime(LocalDateTime.now());
-            myFund.setType(Integer.parseInt(fundChangeVO.getType()));
             if (FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode() == Integer.parseInt(fundChangeVO.getType())){
                 myFund.setProfit(myFund.getProfit().add(new BigDecimal(fundChangeVO.getChangeMoney())));
             }else {
                 myFund.setPrincipal(myFund.getPrincipal().add(new BigDecimal(fundChangeVO.getChangeMoney())));
             }
+            myFund.setProfitRate(BigDecimal.valueOf(rate));
         }else {
             myFund = new MyFund();
             myFund.setFundCode(fundChangeVO.getCode());
             myFund.setFundName(fundChangeVO.getName());
-            myFund.setFundNetWorth(new BigDecimal(fundChangeVO.getWorth()));
-            myFund.setFundShares(new BigDecimal(fundChangeVO.getShares()));
+            myFund.setType(Integer.parseInt(fundChangeVO.getFundType()));
             myFund.setFundMoney(new BigDecimal(fundChangeVO.getChangeMoney()));
             myFund.setProfit(BigDecimal.ZERO);
             myFund.setPrincipal(new BigDecimal(fundChangeVO.getChangeMoney()));
             myFund.setCreateTime(LocalDateTime.now());
             myFund.setUpdateTime(LocalDateTime.now());
             myFund.setType(Integer.parseInt(fundChangeVO.getFundType()));
+            myFund.setProfitRate(BigDecimal.ZERO);
         }
         return saveOrUpdate(myFund);
     }
@@ -162,6 +156,8 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
             fundDTO.setWorth(String.valueOf(myFund.getFundNetWorth()));
             fundDTO.setShares(String.valueOf(myFund.getFundShares()));
             fundDTO.setMoney(CommonConstant.DECIMAL_FORMAT.format(myFund.getFundMoney()));
+        }else{
+            fundDTO.setName(code);
         }
         return fundDTO;
     }

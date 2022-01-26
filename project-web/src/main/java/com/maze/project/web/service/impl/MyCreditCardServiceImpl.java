@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 @Service
 public class MyCreditCardServiceImpl extends ServiceImpl<MyCreditCardMapper, MyCreditCard> implements MyCreditCardService {
 
-    private MyCreditCardDetailService creditCardDetailService;
+    private final MyCreditCardDetailService creditCardDetailService;
 
     public MyCreditCardServiceImpl(MyCreditCardDetailService creditCardDetailService) {
         this.creditCardDetailService = creditCardDetailService;

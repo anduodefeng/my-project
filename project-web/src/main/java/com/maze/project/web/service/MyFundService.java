@@ -24,7 +24,7 @@ public interface MyFundService extends IService<MyFund> {
 
     FundPageDTO getFundPage(FundPageVO fundPageVO);
 
-    boolean updateFund(FundChangeVO fundChangeVO);
+    boolean updateFund(FundChangeVO fundChangeVO, double rate);
 
     FundInfoListDTO getFundInfos(String fundType);
 

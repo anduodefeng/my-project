@@ -28,6 +28,7 @@ public enum ResponseCodeEnum {
     ADD_CARDIT_CARD_DETAIL_ERROR(2020, "增加信用卡明细异常"),
     UPDATE_CREDIT_CARD_ERROR(2021, "更新信用卡额度异常"),
     FIND_CREDIT_CARD_CHART_ERROR(2022, "查询信用卡图表异常"),
+    FIND_FUND_DETAIL_CHART_ERROR(2013, "查询基金变动图表异常"),
     ERROR(9999, "系统错误");
 
     //2开头的，系统错误

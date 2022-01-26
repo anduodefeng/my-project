@@ -8,21 +8,23 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.maze.project.web.common.constant.CommonConstant;
 import com.maze.project.web.common.enums.FundEnum;
+import com.maze.project.web.dto.fund.FundDetailChartDTO;
 import com.maze.project.web.dto.fund.FundDetailDTO;
 import com.maze.project.web.dto.fund.FundDetailPageDTO;
-import com.maze.project.web.entity.MyFund;
 import com.maze.project.web.entity.MyFundDetail;
 import com.maze.project.web.mapper.MyFundDetailMapper;
 import com.maze.project.web.service.MyFundDetailService;
-import com.maze.project.web.service.MyFundService;
 import com.maze.project.web.vo.fund.FundChangeVO;
 import com.maze.project.web.vo.fund.FundDetailPageVO;
+import org.decampo.xirr.Transaction;
+import org.decampo.xirr.Xirr;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -36,17 +38,10 @@ import java.util.stream.Collectors;
 @Service
 public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyFundDetail> implements MyFundDetailService {
 
-    private final MyFundService myFundService;
-
-    public MyFundDetailServiceImpl(MyFundService myFundService) {
-        this.myFundService = myFundService;
-    }
-
     @Override
-    public boolean change(FundChangeVO fundChangeVO) {
-        MyFund myFund = myFundService.getOne(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getFundCode, fundChangeVO.getCode()));
-        BigDecimal principal = null == myFund ? BigDecimal.ZERO : myFund.getPrincipal();
-        BigDecimal profit = null == myFund ? BigDecimal.ZERO : myFund.getProfit();
+    public Map<String, Object> change(FundChangeVO fundChangeVO) {
+        Map<String, Object> map = new HashMap<>();
+        double profitRate = 0;
         MyFundDetail lastDetail = getOne(Wrappers.<MyFundDetail>lambdaQuery()
                         .eq(MyFundDetail::getFundCode, fundChangeVO.getCode())
                         .orderByDesc(MyFundDetail::getCreateTime)
@@ -54,9 +49,7 @@ public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyF
         MyFundDetail myFundDetail = new MyFundDetail();
         myFundDetail.setFundCode(fundChangeVO.getCode());
         myFundDetail.setFundName(fundChangeVO.getName());
-        myFundDetail.setFundShares(new BigDecimal(fundChangeVO.getShares()));
         myFundDetail.setChangeMoney(new BigDecimal(fundChangeVO.getChangeMoney()));
-        myFundDetail.setFundWorth(new BigDecimal(fundChangeVO.getWorth()));
         myFundDetail.setType(Integer.parseInt(fundChangeVO.getType()));
         myFundDetail.setRemark(fundChangeVO.getRemark());
         myFundDetail.setCreateTime(DateUtil.parseLocalDateTime(fundChangeVO.getCreateTime(), "yyyy-MM-dd"));
@@ -67,16 +60,46 @@ public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyF
             myFundDetail.setNewMoney(lastDetail.getNewMoney().add(new BigDecimal(fundChangeVO.getChangeMoney())));
             //记录资产更新时，要同时变更盈利情况和收益率
             if (FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode() == Integer.parseInt(fundChangeVO.getType())){
-                profit = profit.add(new BigDecimal(fundChangeVO.getChangeMoney()));
-                BigDecimal profitRate = profit.divide(principal, 4, RoundingMode.HALF_UP);
-                myFundDetail.setProfitRate(profitRate);
+                profitRate = calculateRate(myFundDetail);
+                myFundDetail.setProfitRate(BigDecimal.valueOf(profitRate));
             }else {
                 //如果是记录本金转入转出，就不用更新收益率了，还是上一次的收益率
                 myFundDetail.setProfitRate(lastDetail.getProfitRate());
+                profitRate = lastDetail.getProfitRate().doubleValue();
             }
         }
+        boolean result = save(myFundDetail);
+        map.put("result", result);
+        map.put("rate", profitRate);
 
-        return save(myFundDetail);
+        return map;
+    }
+
+    @Override
+    public FundDetailChartDTO getChart(String fundCode) {
+        List<String> dateList = new ArrayList<>();
+        List<List<Double>> dataList = new ArrayList<>();
+        List<MyFundDetail> fundDetailList = list(Wrappers.<MyFundDetail>lambdaQuery()
+                .eq(MyFundDetail::getFundCode, fundCode)
+                .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+                .orderByAsc(MyFundDetail::getCreateTime));
+        for (MyFundDetail fundDetail : fundDetailList){
+            List<Double> changeList = new ArrayList<>();
+            String date = DateUtil.format(fundDetail.getCreateTime(), "yyyy-MM-dd");
+            BigDecimal oldMoney = fundDetail.getNewMoney().subtract(fundDetail.getChangeMoney());
+            changeList.add(oldMoney.doubleValue());
+            changeList.add(fundDetail.getNewMoney().doubleValue());
+            changeList.add(oldMoney.doubleValue());
+            changeList.add(fundDetail.getNewMoney().doubleValue());
+            dateList.add(date);
+            dataList.add(changeList);
+        }
+
+        FundDetailChartDTO fundDetailChartDTO = new FundDetailChartDTO();
+        fundDetailChartDTO.setDateList(dateList);
+        fundDetailChartDTO.setDataList(dataList);
+
+        return fundDetailChartDTO;
     }
 
     @Override
@@ -106,5 +129,24 @@ public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyF
         fundDetailPageDTO.setTotalNum(fundDetailIPage.getTotal());
         fundDetailPageDTO.setFundDetailList(list);
         return fundDetailPageDTO;
+    }
+
+
+    private double calculateRate(MyFundDetail myFundDetail){
+        List<MyFundDetail> details = list(Wrappers.<MyFundDetail>lambdaQuery().eq(MyFundDetail::getFundCode, myFundDetail.getFundCode())
+                .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.COST_CHANGE.getCode())
+                .orderByAsc(MyFundDetail::getCreateTime));
+        List<Transaction> transactionList = new ArrayList<>();
+        for (MyFundDetail fundDetail : details){
+            String createTime = DateUtil.format(fundDetail.getCreateTime(), "yyyy-MM-dd");
+            Transaction transaction = new Transaction(fundDetail.getChangeMoney().multiply(BigDecimal.valueOf(-1)).doubleValue(), createTime);
+            transactionList.add(transaction);
+        }
+        String now = DateUtil.format(myFundDetail.getCreateTime(),"yyyy-MM-dd");
+        Transaction transaction = new Transaction(myFundDetail.getNewMoney().doubleValue(), now);
+        transactionList.add(transaction);
+        double rate = new Xirr(transactionList).xirr();
+
+        return rate;
     }
 }

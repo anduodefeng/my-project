@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping(value = "fund")
 @Slf4j
@@ -70,9 +72,11 @@ public class FundController {
     @Transactional(rollbackFor = Exception.class)
     public BaseDTO recordFundChange(@Validated @RequestBody FundChangeVO fundChangeVO){
         try {
-            boolean result = fundDetailService.change(fundChangeVO);
+            Map<String, Object> map = fundDetailService.change(fundChangeVO);
+            boolean result = (boolean) map.get("result");
+            double profitRate = (double) map.get("rate");
             if (result){
-                result = fundService.updateFund(fundChangeVO);
+                result = fundService.updateFund(fundChangeVO, profitRate);
                 if (!result){
                     throw new GlobalException(ResponseCodeEnum.UPDATE_FUND_ERROR);
                 }
@@ -121,6 +125,20 @@ public class FundController {
             throw new GlobalException(ResponseCodeEnum.GET_FUND_INFO_ERROR);
         }
         return BaseDTO.ok().data(fundDTO);
+    }
+
+
+    @GetMapping("detail/chart/{fundCode}")
+    public BaseDTO fundDetailChart(@PathVariable String fundCode){
+        FundDetailChartDTO chartDTO = new FundDetailChartDTO();
+        try {
+            chartDTO = fundDetailService.getChart(fundCode);
+        }catch (Exception e){
+            log.error("=========查询基金变动图表异常==========");
+            throw new GlobalException(ResponseCodeEnum.FIND_FUND_DETAIL_CHART_ERROR);
+        }
+
+        return BaseDTO.ok().data(chartDTO);
     }
 
     /**

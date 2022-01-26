@@ -97,4 +97,7 @@ public class MyFund implements Serializable {
     @TableField("profit")
     private BigDecimal profit;
 
+    @TableField("profit_rate")
+    private BigDecimal profitRate;
+
 }
