@@ -86,6 +86,7 @@ public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyF
     public FundDetailChartDTO getChart(String fundCode) {
         List<String> dateList = new ArrayList<>();
         List<List<Double>> dataList = new ArrayList<>();
+        List<Double> rateList = new ArrayList<>();
         List<MyFundDetail> fundDetailList = list(Wrappers.<MyFundDetail>lambdaQuery()
                 .eq(MyFundDetail::getFundCode, fundCode)
                 .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
@@ -100,11 +101,16 @@ public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyF
             changeList.add(fundDetail.getNewMoney().doubleValue());
             dateList.add(date);
             dataList.add(changeList);
+
+            //收益率
+            double rate = fundDetail.getProfitRate().multiply(BigDecimal.valueOf(100)).doubleValue();
+            rateList.add(rate);
         }
 
         FundDetailChartDTO fundDetailChartDTO = new FundDetailChartDTO();
         fundDetailChartDTO.setDateList(dateList);
         fundDetailChartDTO.setDataList(dataList);
+        fundDetailChartDTO.setRateList(rateList);
 
         return fundDetailChartDTO;
     }

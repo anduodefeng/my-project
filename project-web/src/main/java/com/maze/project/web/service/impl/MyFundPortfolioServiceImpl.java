@@ -157,6 +157,8 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
             portfolioDTO.setType(String.valueOf(myFundPortfolio.getType()));
             portfolioDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(myFundPortfolio.getProfitRate()));
             portfolioDTO.setUpdateTime(myFundPortfolio.getUpdateTime());
+        }else{
+            portfolioDTO.setName(id);
         }
         return portfolioDTO;
     }

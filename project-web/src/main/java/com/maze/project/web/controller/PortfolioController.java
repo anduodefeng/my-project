@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.maze.project.web.common.enums.ResponseCodeEnum;
 import com.maze.project.web.common.exception.GlobalException;
 import com.maze.project.web.common.util.ExceptionUtil;
+import com.maze.project.web.dto.PortfolioDetailChartDTO;
 import com.maze.project.web.dto.common.BaseDTO;
 import com.maze.project.web.dto.fund.PortfolioChartDTO;
 import com.maze.project.web.dto.portfolio.PortfolioDTO;
@@ -134,6 +135,19 @@ public class PortfolioController {
             throw new GlobalException(ResponseCodeEnum.GET_PORTFOLIO_INFO_ERROR);
         }
         return BaseDTO.ok().data(portfolioDTO);
+    }
+
+    @GetMapping("detail/chart/{id}")
+    public BaseDTO portfolioDetailChart(@PathVariable String id){
+        PortfolioDetailChartDTO chartDTO = new PortfolioDetailChartDTO();
+        try {
+            chartDTO = portfolioDetailService.getChart(id);
+        }catch (Exception e){
+            log.error("=========查询基金变动图表异常==========");
+            throw new GlobalException(ResponseCodeEnum.FIND_FUND_DETAIL_CHART_ERROR);
+        }
+
+        return BaseDTO.ok().data(chartDTO);
     }
 
     /**

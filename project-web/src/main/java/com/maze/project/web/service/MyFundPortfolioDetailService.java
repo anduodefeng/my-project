@@ -2,6 +2,7 @@ package com.maze.project.web.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.maze.project.web.dto.PortfolioDetailChartDTO;
 import com.maze.project.web.dto.portfolio.PortfolioDetailPageDTO;
 import com.maze.project.web.entity.MyFundPortfolioDetail;
 import com.maze.project.web.vo.portfolio.PortfolioChangeVO;
@@ -16,6 +17,8 @@ import com.maze.project.web.vo.portfolio.PortfolioDetailPageVO;
  * @since 2021-12-18
  */
 public interface MyFundPortfolioDetailService extends IService<MyFundPortfolioDetail> {
+
+    PortfolioDetailChartDTO getChart(String portfolioId);
 
     boolean change(PortfolioChangeVO portfolioChangeVO);
 

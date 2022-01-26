@@ -1,11 +1,11 @@
-package com.maze.project.web.dto.fund;
+package com.maze.project.web.dto;
 
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class FundDetailChartDTO {
+public class PortfolioDetailChartDTO {
 
     private List<String> dateList;
 
