@@ -1,4 +1,4 @@
-package com.maze.project.web.dto.fund;
+package com.maze.project.web.dto.portfolio;
 
 import com.maze.project.web.dto.common.PieDTO;
 import lombok.Data;
@@ -8,9 +8,10 @@ import java.util.List;
 @Data
 public class PortfolioChartDTO {
 
+    //饼图用数据
     List<PieDTO> pieList;
-
-    List<String> portfolioNameList;
-
-    List<Double> profitRateList;
+    //基金总金额
+    List<String> dateList;
+    //总金额
+    List<Double> totalAmount;
 }

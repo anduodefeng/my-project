@@ -50,7 +50,6 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
     @Override
     public FundChartDTO getChart(String fundType) {
         List<PieDTO> pieList = new ArrayList<>();
-        List<String> fundNameList = new ArrayList<>();
         List<MyFund> fundList = list(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getType, fundType));
         Map<String,Object> map = getDate();
         List<String> dateList = (List<String>) map.get("date");
@@ -63,12 +62,10 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
             pieDTO.setValue(fund.getFundMoney().doubleValue());
             pieList.add(pieDTO);
 
-            fundNameList.add(fund.getFundName());
         }
         List<Double> totalList = getTotal(fundList, start, end);
         FundChartDTO fundChartDTO = new FundChartDTO();
         fundChartDTO.setPieList(pieList);
-        fundChartDTO.setFundNameList(fundNameList);
         fundChartDTO.setDateList(dateList);
         fundChartDTO.setTotalAmount(totalList);
 

@@ -1,5 +1,7 @@
 package com.maze.project.web.service.impl;
 
+import cn.hutool.core.date.DateField;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -8,12 +10,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.maze.project.web.common.constant.CommonConstant;
 import com.maze.project.web.common.enums.FundEnum;
 import com.maze.project.web.dto.common.PieDTO;
-import com.maze.project.web.dto.fund.PortfolioChartDTO;
-import com.maze.project.web.dto.portfolio.PortfolioDTO;
-import com.maze.project.web.dto.portfolio.PortfolioInfoDTO;
-import com.maze.project.web.dto.portfolio.PortfolioInfoListDTO;
-import com.maze.project.web.dto.portfolio.PortfolioPageDTO;
+import com.maze.project.web.dto.portfolio.*;
 import com.maze.project.web.entity.MyFundPortfolio;
+import com.maze.project.web.entity.MyFundPortfolioDetail;
+import com.maze.project.web.mapper.MyFundPortfolioDetailMapper;
 import com.maze.project.web.mapper.MyFundPortfolioMapper;
 import com.maze.project.web.service.MyFundPortfolioService;
 import com.maze.project.web.vo.portfolio.PortfolioChangeVO;
@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -39,11 +40,19 @@ import java.util.Map;
 public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMapper, MyFundPortfolio>
         implements MyFundPortfolioService {
 
+    private final MyFundPortfolioDetailMapper portfolioDetailMapper;
+
+    public MyFundPortfolioServiceImpl(MyFundPortfolioDetailMapper portfolioDetailMapper) {
+        this.portfolioDetailMapper = portfolioDetailMapper;
+    }
+
     @Override
     public PortfolioChartDTO getChart(String accountId) {
         List<PieDTO> pieList = new ArrayList<>();
-        List<String> portfolioNameList = new ArrayList<>();
-        List<Double> profitRateList = new ArrayList<>();
+        Map<String,Object> map = getDate();
+        List<String> dateList = (List<String>) map.get("date");
+        DateTime start = (DateTime) map.get("start");
+        DateTime end = (DateTime) map.get("end");
         List<MyFundPortfolio> portfolioList = list(Wrappers.<MyFundPortfolio>lambdaQuery().eq(MyFundPortfolio::getAccountId, accountId));
         for (MyFundPortfolio portfolio : portfolioList){
 
@@ -52,12 +61,12 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
             pieDTO.setValue(portfolio.getMoney().doubleValue());
             pieList.add(pieDTO);
 
-            profitRateList.add(portfolio.getProfitRate().multiply(BigDecimal.valueOf(100)).doubleValue());
-            portfolioNameList.add(portfolio.getName());
         }
+        List<Double> totalList = getTotal(portfolioList, start, end);
         PortfolioChartDTO portfolioChartDTO = new PortfolioChartDTO();
         portfolioChartDTO.setPieList(pieList);
-        portfolioChartDTO.setProfitRateList(profitRateList);
+        portfolioChartDTO.setDateList(dateList);
+        portfolioChartDTO.setTotalAmount(totalList);
 
         return portfolioChartDTO;
     }
@@ -153,5 +162,44 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
             portfolioDTO.setName(id);
         }
         return portfolioDTO;
+    }
+
+
+    private Map<String, Object> getDate(){
+        Map<String, Object> map = new HashMap<>();
+        List<String> dateList = new ArrayList<>();
+        DateTime end = DateUtil.yesterday().setField(DateField.HOUR_OF_DAY, 0).setField(DateField.MINUTE,0).setField(DateField.SECOND, 0);
+        DateTime start = DateUtil.offsetDay(end, -90);
+        DateTime myTime = DateUtil.parse("2022-01-25", "yyyy-MM-dd");
+        DateTime loopTime;
+        if (start.isBefore(myTime)){
+            loopTime = myTime;
+            start = myTime;
+        }else {
+            loopTime = start;
+        }
+        while (loopTime.isBefore(end)){
+            dateList.add(loopTime.toString("yyyy-MM-dd"));
+            loopTime = DateUtil.offsetDay(loopTime, 1);
+        }
+        map.put("date", dateList);
+        map.put("start", start);
+        map.put("end", end);
+        return map;
+    }
+
+    private List<Double> getTotal(List<MyFundPortfolio> portfolioList, DateTime start, DateTime end){
+        List<Double> totalList = new ArrayList<>();
+        List<Integer> idList = portfolioList.stream().map(MyFundPortfolio::getId).collect(Collectors.toList());
+        for (DateTime i = start ; i.isBefore(end); i = DateUtil.offsetDay(i, 1)){
+            List<MyFundPortfolioDetail> fundDetailList = portfolioDetailMapper.selectList(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
+                    .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+                    .in(MyFundPortfolioDetail::getFundPortfolioId, idList)
+                    .eq(MyFundPortfolioDetail::getCreateTime, i));
+            BigDecimal total = fundDetailList.stream().map(MyFundPortfolioDetail::getNewAssets).reduce(BigDecimal.ZERO, BigDecimal::add);
+            totalList.add(total.doubleValue());
+        }
+
+        return totalList;
     }
 }

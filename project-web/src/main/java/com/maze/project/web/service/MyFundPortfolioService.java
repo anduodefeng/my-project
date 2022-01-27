@@ -2,7 +2,7 @@ package com.maze.project.web.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.maze.project.web.dto.fund.PortfolioChartDTO;
+import com.maze.project.web.dto.portfolio.PortfolioChartDTO;
 import com.maze.project.web.dto.portfolio.PortfolioDTO;
 import com.maze.project.web.dto.portfolio.PortfolioInfoListDTO;
 import com.maze.project.web.dto.portfolio.PortfolioPageDTO;
