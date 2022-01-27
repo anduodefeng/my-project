@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,15 +89,14 @@ public class MyFundPortfolioDetailServiceImpl extends ServiceImpl<MyFundPortfoli
         portfolioDetail.setChangeMoney(new BigDecimal(portfolioChangeVO.getChangeMoney()));
         portfolioDetail.setType(Integer.parseInt(portfolioChangeVO.getChangeType()));
         portfolioDetail.setRemark(portfolioChangeVO.getRemark());
-        portfolioDetail.setCreateTime(LocalDateTime.now());
+        portfolioDetail.setCreateTime(DateUtil.parseLocalDateTime(portfolioChangeVO.getCreateTime(), "yyyy-MM-dd"));
         if (null == lastDetail){
             portfolioDetail.setNewAssets(new BigDecimal(portfolioChangeVO.getChangeMoney()));
             portfolioDetail.setProfitRate(BigDecimal.ZERO);
         }else {
             portfolioDetail.setNewAssets(lastDetail.getNewAssets().add(new BigDecimal(portfolioChangeVO.getChangeMoney())));
             //记录资产更新时，要同时变更盈利情况和收益率
-            if (FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode() == Integer.parseInt(portfolioChangeVO.getChangeMoney())){
-                profit = profit.add(new BigDecimal(portfolioChangeVO.getChangeMoney()));
+            if (FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode() == Integer.parseInt(portfolioChangeVO.getChangeType())){
                 BigDecimal profitRate = profit.divide(principal, 4, RoundingMode.HALF_UP);
                 portfolioDetail.setProfitRate(profitRate);
             }else {

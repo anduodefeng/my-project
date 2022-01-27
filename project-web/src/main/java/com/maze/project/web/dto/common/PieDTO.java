@@ -9,5 +9,4 @@ public class PieDTO {
 
     private double value;
 
-    private PieItemColor itemStyle;
 }

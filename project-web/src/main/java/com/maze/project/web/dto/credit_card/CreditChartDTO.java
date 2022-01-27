@@ -1,6 +1,5 @@
 package com.maze.project.web.dto.credit_card;
 
-import com.maze.project.web.dto.common.BarValueDTO;
 import lombok.Data;
 
 import java.util.List;
@@ -10,7 +9,7 @@ public class CreditChartDTO {
 
     private List<String> monthList;
 
-    private List<BarValueDTO> CMBList;
+    private List<Double> CMBList;
 
-    private List<BarValueDTO> PABList;
+    private List<Double> PABList;
 }

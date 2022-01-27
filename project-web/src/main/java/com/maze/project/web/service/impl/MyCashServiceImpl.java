@@ -6,13 +6,10 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.maze.project.web.common.constant.CommonConstant;
-import com.maze.project.web.common.enums.CashEnum;
 import com.maze.project.web.dto.cash.CashChartDTO;
 import com.maze.project.web.dto.cash.CashDTO;
 import com.maze.project.web.dto.cash.CashPageDTO;
-import com.maze.project.web.dto.common.BarValueDTO;
 import com.maze.project.web.dto.common.PieDTO;
-import com.maze.project.web.dto.common.PieItemColor;
 import com.maze.project.web.entity.MyCash;
 import com.maze.project.web.mapper.MyCashMapper;
 import com.maze.project.web.service.MyCashService;
@@ -63,24 +60,16 @@ public class MyCashServiceImpl extends ServiceImpl<MyCashMapper, MyCash> impleme
     public CashChartDTO getChart() {
         List<PieDTO> pieList = new ArrayList<>();
         List<String> bankNameList = new ArrayList<>();
-        List<BarValueDTO> bankValueList = new ArrayList<>();
+        List<Double> bankValueList = new ArrayList<>();
         List<MyCash> cashList = list();
         for (MyCash cash : cashList){
-            PieItemColor pieItemColor = new PieItemColor();
-            String color = CashEnum.CashPieColorEnum.getColor(cash.getBankName());
-            pieItemColor.setColor(color);
 
             PieDTO pieDTO = new PieDTO();
             pieDTO.setName(cash.getBankName());
             pieDTO.setValue(cash.getAmount().doubleValue());
-            pieDTO.setItemStyle(pieItemColor);
             pieList.add(pieDTO);
 
-            BarValueDTO barValueDTO = new BarValueDTO();
-            barValueDTO.setValue(cash.getAmount().doubleValue());
-            barValueDTO.setColor(color);
-            bankValueList.add(barValueDTO);
-
+            bankValueList.add(cash.getAmount().doubleValue());
             bankNameList.add(cash.getBankName());
         }
         CashChartDTO chartDTO = new CashChartDTO();

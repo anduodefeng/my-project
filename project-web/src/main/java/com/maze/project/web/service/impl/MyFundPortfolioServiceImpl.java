@@ -1,14 +1,13 @@
 package com.maze.project.web.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.maze.project.web.common.constant.CommonConstant;
 import com.maze.project.web.common.enums.FundEnum;
-import com.maze.project.web.dto.common.BarValueDTO;
 import com.maze.project.web.dto.common.PieDTO;
-import com.maze.project.web.dto.common.PieItemColor;
 import com.maze.project.web.dto.fund.PortfolioChartDTO;
 import com.maze.project.web.dto.portfolio.PortfolioDTO;
 import com.maze.project.web.dto.portfolio.PortfolioInfoDTO;
@@ -22,7 +21,7 @@ import com.maze.project.web.vo.portfolio.PortfolioPageVO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,25 +43,16 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
     public PortfolioChartDTO getChart(String accountId) {
         List<PieDTO> pieList = new ArrayList<>();
         List<String> portfolioNameList = new ArrayList<>();
-        List<BarValueDTO> profitRateList = new ArrayList<>();
+        List<Double> profitRateList = new ArrayList<>();
         List<MyFundPortfolio> portfolioList = list(Wrappers.<MyFundPortfolio>lambdaQuery().eq(MyFundPortfolio::getAccountId, accountId));
         for (MyFundPortfolio portfolio : portfolioList){
-            PieItemColor itemColor = new PieItemColor();
-            String color = CommonConstant.randomColor();
-            itemColor.setColor(color);
 
             PieDTO pieDTO = new PieDTO();
             pieDTO.setName(portfolio.getName());
             pieDTO.setValue(portfolio.getMoney().doubleValue());
-            pieDTO.setItemStyle(itemColor);
             pieList.add(pieDTO);
 
-            BarValueDTO barValueDTO = new BarValueDTO();
-            barValueDTO.setValue(portfolio.getProfitRate().multiply(BigDecimal.valueOf(100)).doubleValue());
-            barValueDTO.setColor(color);
-
-            profitRateList.add(barValueDTO);
-
+            profitRateList.add(portfolio.getProfitRate().multiply(BigDecimal.valueOf(100)).doubleValue());
             portfolioNameList.add(portfolio.getName());
         }
         PortfolioChartDTO portfolioChartDTO = new PortfolioChartDTO();
@@ -103,11 +93,13 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
         MyFundPortfolio portfolio = getById(portfolioChangeVO.getPortfolioId());
         if (null != portfolio){
             portfolio.setMoney(portfolio.getMoney().add(new BigDecimal(portfolioChangeVO.getChangeMoney())));
-            if (FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode() == Integer.parseInt(portfolioChangeVO.getType())){
+            if (FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode() == Integer.parseInt(portfolioChangeVO.getChangeType())){
                 portfolio.setProfit(portfolio.getProfit().add(new BigDecimal(portfolioChangeVO.getChangeMoney())));
             }else {
                 portfolio.setPrincipal(portfolio.getPrincipal().add(new BigDecimal(portfolioChangeVO.getChangeMoney())));
             }
+            BigDecimal profitRate = portfolio.getProfit().divide(portfolio.getPrincipal(), 4, RoundingMode.HALF_UP);
+            portfolio.setProfitRate(profitRate);
         }else {
             portfolio = new MyFundPortfolio();
             portfolio.setName(portfolioChangeVO.getName());
@@ -115,12 +107,12 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
             portfolio.setPrincipal(new BigDecimal(portfolioChangeVO.getChangeMoney()));
             portfolio.setAccountId(Integer.parseInt(portfolioChangeVO.getAccountId()));
             portfolio.setAccountName(portfolioChangeVO.getAccountName());
-            portfolio.setCreateTime(LocalDateTime.now());
+            portfolio.setCreateTime(DateUtil.parseLocalDateTime(portfolioChangeVO.getCreateTime(), "yyyy-MM-dd"));
             portfolio.setProfit(BigDecimal.ZERO);
             portfolio.setProfitRate(BigDecimal.ZERO);
         }
         portfolio.setType(Integer.parseInt(portfolioChangeVO.getType()));
-        portfolio.setUpdateTime(LocalDateTime.now());
+        portfolio.setUpdateTime(DateUtil.parseLocalDateTime(portfolioChangeVO.getCreateTime(), "yyyy-MM-dd"));
         boolean result = saveOrUpdate(portfolio);
         Map<String, Object> map = new HashMap<>();
         map.put("result", result);

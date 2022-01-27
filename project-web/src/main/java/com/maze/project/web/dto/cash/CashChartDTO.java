@@ -1,6 +1,5 @@
 package com.maze.project.web.dto.cash;
 
-import com.maze.project.web.dto.common.BarValueDTO;
 import com.maze.project.web.dto.common.PieDTO;
 import lombok.Data;
 
@@ -13,5 +12,5 @@ public class CashChartDTO {
 
     List<String> bankNameList;
 
-    List<BarValueDTO> bankValueList;
+    List<Double> bankValueList;
 }

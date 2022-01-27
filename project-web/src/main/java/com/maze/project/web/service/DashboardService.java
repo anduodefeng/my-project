@@ -1,11 +1,9 @@
 package com.maze.project.web.service;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.maze.project.web.common.constant.CommonConstant;
 import com.maze.project.web.common.enums.FundEnum;
 import com.maze.project.web.common.enums.PortfolioEnum;
 import com.maze.project.web.dto.common.PieDTO;
-import com.maze.project.web.dto.common.PieItemColor;
 import com.maze.project.web.entity.MyCash;
 import com.maze.project.web.entity.MyFund;
 import com.maze.project.web.entity.MyFundPortfolio;
@@ -55,28 +53,16 @@ public class DashboardService {
 
         List<PieDTO> pieList = new ArrayList<>();
         PieDTO cashPie = new PieDTO();
-        PieItemColor itemColor = new PieItemColor();
-        String cashColor = CommonConstant.randomColor();
-        itemColor.setColor(cashColor);
         cashPie.setName("现金");
         cashPie.setValue(cashTotal.doubleValue());
-        cashPie.setItemStyle(itemColor);
 
         PieDTO robustPie = new PieDTO();
-        PieItemColor robustColor = new PieItemColor();
-        String color = CommonConstant.randomColor();
-        robustColor.setColor(color);
         robustPie.setName("稳健");
         robustPie.setValue(robustTotal.add(monetaryTotal).doubleValue());
-        robustPie.setItemStyle(robustColor);
 
         PieDTO aggressivePie = new PieDTO();
-        PieItemColor aggressiveColor = new PieItemColor();
-        String color1 = CommonConstant.randomColor();
-        aggressiveColor.setColor(color1);
         aggressivePie.setName("积极增值");
         aggressivePie.setValue(aggressiveTotal.add(othereFundTotal).doubleValue());
-        aggressivePie.setItemStyle(aggressiveColor);
 
         pieList.add(cashPie);
         pieList.add(robustPie);

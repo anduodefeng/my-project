@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.maze.project.web.common.constant.CommonConstant;
-import com.maze.project.web.dto.common.BarValueDTO;
 import com.maze.project.web.dto.credit_card.BankInfoDTO;
 import com.maze.project.web.dto.credit_card.CreditCardDTO;
 import com.maze.project.web.dto.credit_card.CreditCardPageDTO;
@@ -50,8 +49,8 @@ public class MyCreditCardServiceImpl extends ServiceImpl<MyCreditCardMapper, MyC
     @Override
     public CreditChartDTO getChart() {
         List<String> monthList = new ArrayList<>();
-        List<BarValueDTO> CMBList = new ArrayList<>();
-        List<BarValueDTO> PABList = new ArrayList<>();
+        List<Double> CMBList = new ArrayList<>();
+        List<Double> PABList = new ArrayList<>();
         for (int i = 1; i < 13; i++){
             String color = CommonConstant.randomColor();
             String dateStr = DateTime.now().year() + "-" + String.format("%02d", i);
@@ -61,19 +60,13 @@ public class MyCreditCardServiceImpl extends ServiceImpl<MyCreditCardMapper, MyC
                     Wrappers.<MyCreditCardDetail>lambdaQuery().eq(MyCreditCardDetail::getCreditName, "招商银行")
                             .between(MyCreditCardDetail::getCreateTime, DateUtil.beginOfMonth(date), DateUtil.endOfMonth(date)));
             BigDecimal total = creditCardDetails.stream().map(MyCreditCardDetail::getChangeAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-            BarValueDTO cmbValue = new BarValueDTO();
-            cmbValue.setValue(total.doubleValue());
-            cmbValue.setColor(color);
-            CMBList.add(cmbValue);
+            CMBList.add(total.doubleValue());
 
             creditCardDetails = creditCardDetailService.list(
                     Wrappers.<MyCreditCardDetail>lambdaQuery().eq(MyCreditCardDetail::getCreditName, "平安银行")
                             .between(MyCreditCardDetail::getCreateTime, DateUtil.beginOfMonth(date), DateUtil.endOfMonth(date)));
             total = creditCardDetails.stream().map(MyCreditCardDetail::getChangeAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-            BarValueDTO pabValue = new BarValueDTO();
-            pabValue.setValue(total.doubleValue());
-            pabValue.setColor(color);
-            PABList.add(pabValue);
+            PABList.add(total.doubleValue());
         }
 
         CreditChartDTO creditChartDTO = new CreditChartDTO();

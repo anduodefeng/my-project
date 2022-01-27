@@ -26,6 +26,8 @@ public class CommonConstant {
         "#1891ac","#66c6ba","#a82ffc","#d988bc"
     };
 
+    public static final String beginTime = "2022-01-25";
+
     public static String randomColor(){
         int index = RandomUtil.randomInt(52);
         return CommonConstant.FUND_CHART_COLOR[index];

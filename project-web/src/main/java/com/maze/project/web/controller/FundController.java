@@ -35,7 +35,7 @@ public class FundController {
         try {
             chartDTO = fundService.getChart(fundType);
         }catch (Exception e){
-            log.error("=========查询基金图表异常==========");
+            log.error("=========查询基金图表异常=========={}", ExceptionUtil.getMessage(e));
             throw new GlobalException(ResponseCodeEnum.FIND_FUND_CHART_ERROR);
         }
 

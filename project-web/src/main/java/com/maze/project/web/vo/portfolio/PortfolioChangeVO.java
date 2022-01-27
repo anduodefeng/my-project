@@ -25,4 +25,7 @@ public class PortfolioChangeVO {
      */
     @NotBlank(message = "type不能为空")
     private String type;
+
+    @NotBlank(message = "变动时间不能为空")
+    private String createTime;
 }
