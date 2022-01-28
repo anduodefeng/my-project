@@ -1,5 +1,6 @@
 package com.maze.project.web.service;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
@@ -7,6 +8,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.maze.project.web.common.enums.FundEnum;
 import com.maze.project.web.common.enums.PortfolioEnum;
 import com.maze.project.web.dto.common.PieDTO;
+import com.maze.project.web.dto.dashboard.IndexDTO;
 import com.maze.project.web.entity.*;
 import org.springframework.stereotype.Service;
 
@@ -35,8 +37,19 @@ public class DashboardService {
         this.cashService = cashService;
     }
 
-    public void index(){
+    public IndexDTO index(){
+        IndexDTO indexDTO = new IndexDTO();
+        Map<String, Double> assetsInfo = getAssetsInfo();
+        Map<String, Object> everyTotal = getEveryDayAssets();
 
+        indexDTO.setTotalAssets(assetsInfo.get("totalMoney"));
+        indexDTO.setTotalProfit(assetsInfo.get("totalProfit"));
+        indexDTO.setYesterdayProfit(yesterdayProfit());
+        indexDTO.setPieList(buildPie());
+        indexDTO.setDateList((List<String>) everyTotal.get("date"));
+        indexDTO.setMoneyList((List<Double>) everyTotal.get("everyAssets"));
+
+        return indexDTO;
     }
 
     /**
@@ -75,16 +88,18 @@ public class DashboardService {
      * @return double
      */
     private double yesterdayProfit(){
-        DateTime yesterday = DateUtil.yesterday().setField(DateField.HOUR_OF_DAY, 0)
-                .setField(DateField.MINUTE, 0).setField(DateField.SECOND, 0);
-        MyFundDetail fundDetail = fundDetailService.getOne(Wrappers.<MyFundDetail>lambdaQuery()
+        DateTime yesterday = DateUtil.yesterday();
+        List<MyFundDetail> fundDetail = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
                 .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
-                .eq(MyFundDetail::getCreateTime, yesterday));
-        BigDecimal fundDetailProfit = null == fundDetail ? BigDecimal.ZERO : fundDetail.getChangeMoney();
-        MyFundPortfolioDetail portfolioDetail = portfolioDetailService.getOne(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
+                .eq(MyFundDetail::getCreateTime, yesterday.toString("yyyy-MM-dd")));
+        BigDecimal fundDetailProfit = CollUtil.isEmpty(fundDetail) ? BigDecimal.ZERO :
+                fundDetail.stream().map(MyFundDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        List<MyFundPortfolioDetail> portfolioDetail = portfolioDetailService.list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
                 .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
-                .eq(MyFundPortfolioDetail::getCreateTime, yesterday));
-        BigDecimal portfolioProfit = null == portfolioDetail ? BigDecimal.ZERO : portfolioDetail.getChangeMoney();
+                .eq(MyFundPortfolioDetail::getCreateTime, yesterday.toString("yyyy-MM-dd")));
+        BigDecimal portfolioProfit = CollUtil.isEmpty(portfolioDetail) ? BigDecimal.ZERO :
+                portfolioDetail.stream().map(MyFundPortfolioDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return fundDetailProfit.add(portfolioProfit).doubleValue();
     }
@@ -139,5 +154,42 @@ public class DashboardService {
         pieList.add(robustPie);
 
         return pieList;
+    }
+
+    /**
+     * 每日资产变化
+     * @return map
+     */
+    private Map<String, Object> getEveryDayAssets(){
+        Map<String, Object> map = new HashMap<>();
+        List<String> dateList = new ArrayList<>();
+        List<Double> assetList = new ArrayList<>();
+        DateTime end = DateUtil.yesterday().setField(DateField.HOUR_OF_DAY, 0).setField(DateField.MINUTE,0).setField(DateField.SECOND, 0);
+        DateTime start = DateUtil.offsetDay(end, -90);
+        DateTime myTime = DateUtil.parse("2022-01-25", "yyyy-MM-dd");
+        if (start.isBefore(myTime)){
+            start = myTime;
+        }
+        while (start.isBefore(end)){
+            dateList.add(start.toString("yyyy-MM-dd"));
+            List<MyFundDetail> fundDetail = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
+                    .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+                    .eq(MyFundDetail::getCreateTime, start));
+            BigDecimal totalFund = fundDetail.stream().map(MyFundDetail::getNewMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+            List<MyFundPortfolioDetail> portfolioDetails = portfolioDetailService.list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
+                    .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+                    .eq(MyFundPortfolioDetail::getCreateTime, start));
+            BigDecimal totalPortfolio = portfolioDetails.stream().map(MyFundPortfolioDetail::getNewAssets).reduce(BigDecimal.ZERO, BigDecimal::add);
+            List<MyCash> cashList = cashService.list();
+            BigDecimal cashMoney = cashList.stream().map(MyCash::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal total = totalFund.add(totalPortfolio).add(cashMoney);
+            assetList.add(total.doubleValue());
+
+            start = DateUtil.offsetDay(start, 1);
+        }
+        map.put("date", dateList);
+        map.put("everyAssets", assetList);
+
+        return map;
     }
 }
