@@ -9,6 +9,5 @@ public class ManyLineDTO {
 
     private String name;
     private String type = "line";
-    private String stack = "Total";
     private List<Double> data;
 }

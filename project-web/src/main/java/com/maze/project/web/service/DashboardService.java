@@ -7,6 +7,7 @@ import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.maze.project.web.common.enums.FundEnum;
 import com.maze.project.web.common.enums.PortfolioEnum;
+import com.maze.project.web.dto.common.ManyLineDTO;
 import com.maze.project.web.dto.common.PieDTO;
 import com.maze.project.web.dto.dashboard.IndexDTO;
 import com.maze.project.web.entity.*;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class DashboardService {
@@ -41,14 +43,36 @@ public class DashboardService {
         IndexDTO indexDTO = new IndexDTO();
         Map<String, Double> assetsInfo = getAssetsInfo();
         Map<String, Object> everyTotal = getEveryDayAssets();
+        List<String> dateList = (List<String>) everyTotal.get("date");
+        List<Double> moneyList = (List<Double>) everyTotal.get("everyAssets");
+        List<Double> principalList = (List<Double>) everyTotal.get("principal");
 
         indexDTO.setTotalAssets(assetsInfo.get("totalMoney"));
         indexDTO.setTotalProfit(assetsInfo.get("totalProfit"));
         indexDTO.setYesterdayProfit(yesterdayProfit());
         indexDTO.setPieList(buildPie());
-        indexDTO.setDateList((List<String>) everyTotal.get("date"));
-        indexDTO.setMoneyList((List<Double>) everyTotal.get("everyAssets"));
-        indexDTO.setPrincipalList((List<Double>) everyTotal.get("principal"));
+        indexDTO.setDateList(dateList);
+        indexDTO.setMoneyList(moneyList);
+        indexDTO.setPrincipalList(principalList);
+
+        Map<String, Object> indexFundLine = getFundLine(FundEnum.FundTypeEnum.INDEX_FUND.getCode(), dateList);
+        indexDTO.setIndexFundNameList((List<String>) indexFundLine.get("fundName"));
+        indexDTO.setIndexFundLine((List<ManyLineDTO>) indexFundLine.get("manyLine"));
+        Map<String, Object> activeFundLine = getFundLine(FundEnum.FundTypeEnum.ACTIVE_FUND.getCode(), dateList);
+        indexDTO.setActiveFundNameList((List<String>) activeFundLine.get("fundName"));
+        indexDTO.setActiveFundLine((List<ManyLineDTO>) activeFundLine.get("manyLine"));
+
+        List<Integer> list = new ArrayList<>();
+        list.add(PortfolioEnum.PortfolioTypeEnum.ROBUST.getCode());
+        Map<String, Object> robustPortfolioLine = getPortfolioLine(list, dateList);
+        indexDTO.setRobustPortfolioNameList((List<String>) robustPortfolioLine.get("portfolioName"));
+        indexDTO.setRobustPortfolioLine((List<ManyLineDTO>) robustPortfolioLine.get("manyLine"));
+        list.clear();
+        list.add(PortfolioEnum.PortfolioTypeEnum.AGGRESSIVE.getCode());
+        list.add(PortfolioEnum.PortfolioTypeEnum.FIXED_CASTING.getCode());
+        Map<String, Object> aggressivePortfolioLine = getPortfolioLine(list, dateList);
+        indexDTO.setAggressivePortfolioNameList((List<String>) aggressivePortfolioLine.get("portfolioName"));
+        indexDTO.setAggressivePortfolioLine((List<ManyLineDTO>) aggressivePortfolioLine.get("manyLine"));
 
         return indexDTO;
     }
@@ -199,4 +223,69 @@ public class DashboardService {
 
         return map;
     }
+
+    /**
+     * 基金收益率
+     * @param fundType  基金类型
+     * @param dateList  日期列表
+     * @return  map
+     */
+    private Map<String, Object> getFundLine(int fundType,List<String> dateList){
+        List<ManyLineDTO> manyLineList = new ArrayList<>();
+        List<String> indexNameList = new ArrayList<>();
+        List<MyFund> fundList = fundService.list(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getType, fundType));
+        String start = dateList.get(0);
+        String end = dateList.get(dateList.size()-1);
+        for (MyFund fund : fundList){
+            ManyLineDTO manyLineDTO = new ManyLineDTO();
+            manyLineDTO.setName(fund.getFundName());
+            List<MyFundDetail> fundDetailList = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
+                    .eq(MyFundDetail::getFundCode, fund.getFundCode())
+                    .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+                    .between(MyFundDetail::getCreateTime, start, end).orderByAsc(MyFundDetail::getCreateTime));
+            List<Double> list = fundDetailList.stream().map(myFundDetail -> myFundDetail.getProfitRate().multiply(BigDecimal.valueOf(100)).doubleValue())
+                    .collect(Collectors.toList());
+            manyLineDTO.setData(list);
+            indexNameList.add(fund.getFundName());
+            manyLineList.add(manyLineDTO);
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("manyLine", manyLineList);
+        map.put("fundName", indexNameList);
+
+        return map;
+    }
+
+    /**
+     * 组合收益率
+     * @param portfolioTypeList  基金类型
+     * @param dateList  日期列表
+     * @return  map
+     */
+    private Map<String, Object> getPortfolioLine(List<Integer> portfolioTypeList,List<String> dateList){
+        List<ManyLineDTO> manyLineList = new ArrayList<>();
+        List<String> portfolioNameList = new ArrayList<>();
+        List<MyFundPortfolio> portfolioList = portfolioService.list(Wrappers.<MyFundPortfolio>lambdaQuery().in(MyFundPortfolio::getType, portfolioTypeList));
+        String start = dateList.get(0);
+        String end = dateList.get(dateList.size()-1);
+        for (MyFundPortfolio portfolio : portfolioList){
+            ManyLineDTO manyLineDTO = new ManyLineDTO();
+            manyLineDTO.setName(portfolio.getName());
+            List<MyFundPortfolioDetail> portfolioDetailList = portfolioDetailService.list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
+                    .eq(MyFundPortfolioDetail::getFundPortfolioId, portfolio.getId())
+                    .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+                    .between(MyFundPortfolioDetail::getCreateTime, start, end).orderByAsc(MyFundPortfolioDetail::getCreateTime));
+            List<Double> list = portfolioDetailList.stream().map(portfolioDetail -> portfolioDetail.getProfitRate().multiply(BigDecimal.valueOf(100)).doubleValue())
+                    .collect(Collectors.toList());
+            manyLineDTO.setData(list);
+            portfolioNameList.add(portfolio.getName());
+            manyLineList.add(manyLineDTO);
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("manyLine", manyLineList);
+        map.put("portfolioName", portfolioNameList);
+
+        return map;
+    }
+
 }

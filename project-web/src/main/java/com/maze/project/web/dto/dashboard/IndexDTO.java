@@ -1,5 +1,6 @@
 package com.maze.project.web.dto.dashboard;
 
+import com.maze.project.web.dto.common.ManyLineDTO;
 import com.maze.project.web.dto.common.PieDTO;
 import lombok.Data;
 
@@ -20,4 +21,16 @@ public class IndexDTO {
     List<String> dateList;
     List<Double> moneyList;
     List<Double> principalList;
+    //指数基金收益率图
+    private List<String> indexFundNameList;
+    private List<ManyLineDTO> indexFundLine;
+    //主动基金收益率图
+    private List<String> activeFundNameList;
+    private List<ManyLineDTO> activeFundLine;
+    //稳健组合收益率图
+    private List<String> robustPortfolioNameList;
+    private List<ManyLineDTO> robustPortfolioLine;
+    //积极组合收益率图
+    private List<String> aggressivePortfolioNameList;
+    private List<ManyLineDTO> aggressivePortfolioLine;
 }
