@@ -19,4 +19,5 @@ public class IndexDTO {
     //总资产每日折线图
     List<String> dateList;
     List<Double> moneyList;
+    List<Double> principalList;
 }

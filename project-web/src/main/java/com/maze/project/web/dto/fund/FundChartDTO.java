@@ -14,4 +14,6 @@ public class FundChartDTO {
     List<String> dateList;
     //总金额
     List<Double> totalAmount;
+    //总成本
+    List<Double> totalPrincipal;
 }

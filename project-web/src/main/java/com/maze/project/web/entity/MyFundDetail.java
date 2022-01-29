@@ -81,5 +81,10 @@ public class MyFundDetail implements Serializable {
 
     @TableField("profit_rate")
     private BigDecimal profitRate;
+    /**
+     * 本金
+     */
+    @TableField("principal")
+    private BigDecimal principal;
 
 }

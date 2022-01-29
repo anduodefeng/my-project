@@ -62,11 +62,12 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
             pieList.add(pieDTO);
 
         }
-        List<Double> totalList = getTotal(portfolioList, start, end);
+        Map<String, List<Double>> totalMap = getTotal(portfolioList, start, end);
         PortfolioChartDTO portfolioChartDTO = new PortfolioChartDTO();
         portfolioChartDTO.setPieList(pieList);
         portfolioChartDTO.setDateList(dateList);
-        portfolioChartDTO.setTotalAmount(totalList);
+        portfolioChartDTO.setTotalAmount(totalMap.get("total"));
+        portfolioChartDTO.setTotalPrincipal(totalMap.get("principal"));
 
         return portfolioChartDTO;
     }
@@ -188,8 +189,9 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
         return map;
     }
 
-    private List<Double> getTotal(List<MyFundPortfolio> portfolioList, DateTime start, DateTime end){
+    private Map<String, List<Double>> getTotal(List<MyFundPortfolio> portfolioList, DateTime start, DateTime end){
         List<Double> totalList = new ArrayList<>();
+        List<Double> principalList = new ArrayList<>();
         List<Integer> idList = portfolioList.stream().map(MyFundPortfolio::getId).collect(Collectors.toList());
         for (DateTime i = start ; i.isBefore(end); i = DateUtil.offsetDay(i, 1)){
             List<MyFundPortfolioDetail> fundDetailList = portfolioDetailMapper.selectList(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
@@ -197,9 +199,14 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
                     .in(MyFundPortfolioDetail::getFundPortfolioId, idList)
                     .eq(MyFundPortfolioDetail::getCreateTime, i));
             BigDecimal total = fundDetailList.stream().map(MyFundPortfolioDetail::getNewAssets).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal principal = fundDetailList.stream().map(MyFundPortfolioDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
             totalList.add(total.doubleValue());
+            principalList.add(principal.doubleValue());
         }
+        Map<String, List<Double>> map = new HashMap<>();
+        map.put("total", totalList);
+        map.put("principal", principalList);
 
-        return totalList;
+        return map;
     }
 }

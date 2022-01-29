@@ -48,6 +48,7 @@ public class DashboardService {
         indexDTO.setPieList(buildPie());
         indexDTO.setDateList((List<String>) everyTotal.get("date"));
         indexDTO.setMoneyList((List<Double>) everyTotal.get("everyAssets"));
+        indexDTO.setPrincipalList((List<Double>) everyTotal.get("principal"));
 
         return indexDTO;
     }
@@ -164,6 +165,7 @@ public class DashboardService {
         Map<String, Object> map = new HashMap<>();
         List<String> dateList = new ArrayList<>();
         List<Double> assetList = new ArrayList<>();
+        List<Double> principalList = new ArrayList<>();
         DateTime end = DateUtil.yesterday().setField(DateField.HOUR_OF_DAY, 0).setField(DateField.MINUTE,0).setField(DateField.SECOND, 0);
         DateTime start = DateUtil.offsetDay(end, -90);
         DateTime myTime = DateUtil.parse("2022-01-25", "yyyy-MM-dd");
@@ -176,19 +178,24 @@ public class DashboardService {
                     .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
                     .eq(MyFundDetail::getCreateTime, start));
             BigDecimal totalFund = fundDetail.stream().map(MyFundDetail::getNewMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal totalFundPrincipal = fundDetail.stream().map(MyFundDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
             List<MyFundPortfolioDetail> portfolioDetails = portfolioDetailService.list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
                     .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
                     .eq(MyFundPortfolioDetail::getCreateTime, start));
             BigDecimal totalPortfolio = portfolioDetails.stream().map(MyFundPortfolioDetail::getNewAssets).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal totalPrincipal = portfolioDetails.stream().map(MyFundPortfolioDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
             List<MyCash> cashList = cashService.list();
             BigDecimal cashMoney = cashList.stream().map(MyCash::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
             BigDecimal total = totalFund.add(totalPortfolio).add(cashMoney);
+            BigDecimal principal = totalPrincipal.add(totalFundPrincipal).add(cashMoney);
             assetList.add(total.doubleValue());
+            principalList.add(principal.doubleValue());
 
             start = DateUtil.offsetDay(start, 1);
         }
         map.put("date", dateList);
         map.put("everyAssets", assetList);
+        map.put("principal", principalList);
 
         return map;
     }

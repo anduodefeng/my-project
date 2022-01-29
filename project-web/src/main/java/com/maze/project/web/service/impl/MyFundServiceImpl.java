@@ -63,11 +63,12 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
             pieList.add(pieDTO);
 
         }
-        List<Double> totalList = getTotal(fundList, start, end);
+        Map<String, List<Double>> totalMap = getTotal(fundList, start, end);
         FundChartDTO fundChartDTO = new FundChartDTO();
         fundChartDTO.setPieList(pieList);
         fundChartDTO.setDateList(dateList);
-        fundChartDTO.setTotalAmount(totalList);
+        fundChartDTO.setTotalAmount(totalMap.get("total"));
+        fundChartDTO.setTotalPrincipal(totalMap.get("principal"));
 
         return fundChartDTO;
     }
@@ -171,7 +172,7 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
         List<String> dateList = new ArrayList<>();
         DateTime end = DateUtil.yesterday().setField(DateField.HOUR_OF_DAY, 0).setField(DateField.MINUTE,0).setField(DateField.SECOND, 0);
         DateTime start = DateUtil.offsetDay(end, -90);
-        DateTime myTime = DateUtil.parse("2022-01-25", "yyyy-MM-dd");
+        DateTime myTime = DateUtil.parse("2022-01-26", "yyyy-MM-dd");
         DateTime loopTime;
         if (start.isBefore(myTime)){
             loopTime = myTime;
@@ -190,8 +191,9 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
     }
 
 
-    private List<Double> getTotal(List<MyFund> fundList, DateTime start, DateTime end){
+    private Map<String, List<Double>> getTotal(List<MyFund> fundList, DateTime start, DateTime end){
         List<Double> totalList = new ArrayList<>();
+        List<Double> principalList = new ArrayList<>();
         List<String> fundCode = fundList.stream().map(MyFund::getFundCode).collect(Collectors.toList());
         for (DateTime i = start ; i.isBefore(end); i = DateUtil.offsetDay(i, 1)){
             List<MyFundDetail> fundDetailList = fundDetailMapper.selectList(Wrappers.<MyFundDetail>lambdaQuery()
@@ -199,10 +201,14 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
                     .in(MyFundDetail::getFundCode, fundCode)
                     .eq(MyFundDetail::getCreateTime, i));
             BigDecimal total = fundDetailList.stream().map(MyFundDetail::getNewMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal principal = fundDetailList.stream().map(MyFundDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
             totalList.add(total.doubleValue());
+            principalList.add(principal.doubleValue());
         }
-
-        return totalList;
+        Map<String, List<Double>> map = new HashMap<>();
+        map.put("total", totalList);
+        map.put("principal", principalList);
+        return map;
     }
 
 }

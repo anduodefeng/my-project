@@ -93,15 +93,18 @@ public class MyFundPortfolioDetailServiceImpl extends ServiceImpl<MyFundPortfoli
         if (null == lastDetail){
             portfolioDetail.setNewAssets(new BigDecimal(portfolioChangeVO.getChangeMoney()));
             portfolioDetail.setProfitRate(BigDecimal.ZERO);
+            portfolioDetail.setPrincipal(new BigDecimal(portfolioChangeVO.getChangeMoney()));
         }else {
             portfolioDetail.setNewAssets(lastDetail.getNewAssets().add(new BigDecimal(portfolioChangeVO.getChangeMoney())));
             //记录资产更新时，要同时变更盈利情况和收益率
             if (FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode() == Integer.parseInt(portfolioChangeVO.getChangeType())){
                 BigDecimal profitRate = profit.divide(principal, 4, RoundingMode.HALF_UP);
                 portfolioDetail.setProfitRate(profitRate);
+                portfolioDetail.setPrincipal(lastDetail.getPrincipal());
             }else {
                 //如果是记录本金转入转出，就不用更新收益率了，还是上一次的收益率
                 portfolioDetail.setProfitRate(lastDetail.getProfitRate());
+                portfolioDetail.setPrincipal(lastDetail.getPrincipal().add(new BigDecimal(portfolioChangeVO.getChangeMoney())));
             }
         }
 

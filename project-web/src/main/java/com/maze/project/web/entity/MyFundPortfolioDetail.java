@@ -72,4 +72,10 @@ public class MyFundPortfolioDetail implements Serializable {
      */
     @TableField("type")
     private Integer type;
+
+    /**
+     * 本金
+     */
+    @TableField("principal")
+    private BigDecimal principal;
 }

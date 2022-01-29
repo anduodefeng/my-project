@@ -63,15 +63,18 @@ public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyF
         if (null == lastDetail){
             myFundDetail.setNewMoney(new BigDecimal(fundChangeVO.getChangeMoney()));
             myFundDetail.setProfitRate(BigDecimal.ZERO);
+            myFundDetail.setPrincipal(new BigDecimal(fundChangeVO.getChangeMoney()));
         }else {
             myFundDetail.setNewMoney(lastDetail.getNewMoney().add(new BigDecimal(fundChangeVO.getChangeMoney())));
             //记录资产更新时，要同时变更盈利情况和收益率
             if (FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode() == Integer.parseInt(fundChangeVO.getType())){
                 profitRate = calculateRate(myFundDetail);
                 myFundDetail.setProfitRate(profitRate);
+                myFundDetail.setPrincipal(lastDetail.getPrincipal());
             }else {
                 //如果是记录本金转入转出，就不用更新收益率了，还是上一次的收益率
                 myFundDetail.setProfitRate(lastDetail.getProfitRate());
+                myFundDetail.setPrincipal(lastDetail.getPrincipal().add(new BigDecimal(fundChangeVO.getChangeMoney())));
                 profitRate = lastDetail.getProfitRate();
             }
         }
