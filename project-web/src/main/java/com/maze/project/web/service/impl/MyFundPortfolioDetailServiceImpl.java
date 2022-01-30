@@ -124,7 +124,7 @@ public class MyFundPortfolioDetailServiceImpl extends ServiceImpl<MyFundPortfoli
             portfolioDetailDTO.setChangeType(String.valueOf(myFundPortfolioDetail.getType()));
             portfolioDetailDTO.setChangeMoney(CommonConstant.DECIMAL_FORMAT.format(myFundPortfolioDetail.getChangeMoney()));
             portfolioDetailDTO.setCreateTime(myFundPortfolioDetail.getCreateTime());
-            portfolioDetailDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(myFundPortfolioDetail.getProfitRate()));
+            portfolioDetailDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(myFundPortfolioDetail.getProfitRate().multiply(BigDecimal.valueOf(100))));
             list.add(portfolioDetailDTO);
         }
         PortfolioDetailPageDTO portfolioDetailPageDTO = new PortfolioDetailPageDTO();
