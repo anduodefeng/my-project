@@ -2,6 +2,7 @@ package com.maze.project.web.service;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateField;
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -73,6 +74,8 @@ public class DashboardService {
         Map<String, Object> aggressivePortfolioLine = getPortfolioLine(list, dateList);
         indexDTO.setAggressivePortfolioNameList((List<String>) aggressivePortfolioLine.get("portfolioName"));
         indexDTO.setAggressivePortfolioLine((List<ManyLineDTO>) aggressivePortfolioLine.get("manyLine"));
+
+        indexDTO.setCalendarList(getMonth());
 
         return indexDTO;
     }
@@ -288,4 +291,15 @@ public class DashboardService {
         return map;
     }
 
+    private List<String> getMonth(){
+        List<String> list = new ArrayList<>();
+        DateTime start = DateUtil.beginOfMonth(DateUtil.parseDate("2021-03-01"));
+        DateTime end = DateUtil.endOfMonth(DateUtil.parseDate("2021-03-01"));
+        while (start.isBefore(end)){
+            list.add(start.toString(DatePattern.NORM_DATE_PATTERN));
+            start = start.offset(DateField.DAY_OF_YEAR, 1);
+        }
+
+        return list;
+    }
 }

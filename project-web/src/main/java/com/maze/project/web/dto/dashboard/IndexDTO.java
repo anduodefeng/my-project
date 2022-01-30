@@ -33,4 +33,6 @@ public class IndexDTO {
     //积极组合收益率图
     private List<String> aggressivePortfolioNameList;
     private List<ManyLineDTO> aggressivePortfolioLine;
+
+    private List<String> calendarList;
 }
