@@ -1,10 +1,14 @@
 package com.maze.project.web.service.impl;
 
+import cn.hutool.core.date.DateField;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.maze.project.web.common.constant.CommonConstant;
+import com.maze.project.web.dto.credit_card.DetailChartDTO;
 import com.maze.project.web.dto.credit_card.DetailDTO;
 import com.maze.project.web.dto.credit_card.DetailPageDTO;
 import com.maze.project.web.entity.MyCreditCardDetail;
@@ -15,7 +19,6 @@ import com.maze.project.web.vo.credit_card.DetailPageVO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,12 +35,39 @@ import java.util.stream.Collectors;
 public class MyCreditCardDetailServiceImpl extends ServiceImpl<MyCreditCardDetailMapper, MyCreditCardDetail> implements MyCreditCardDetailService {
 
     @Override
+    public DetailChartDTO getDetailChart(String bankName) {
+        List<String> dateList = new ArrayList<>();
+        List<Double> moneyList = new ArrayList<>();
+        DateTime end = DateUtil.yesterday().setField(DateField.HOUR_OF_DAY, 0).setField(DateField.MINUTE,0).setField(DateField.SECOND, 0);
+        DateTime start = DateUtil.offsetDay(end, -90);
+        DateTime myTime = DateUtil.parse("2022-01-01", "yyyy-MM-dd");
+        if (start.isBefore(myTime)){
+            start = myTime;
+        }
+        while (start.isBefore(end)){
+            List<MyCreditCardDetail> creditCardDetailList = list(Wrappers.<MyCreditCardDetail>lambdaQuery()
+                    .eq(MyCreditCardDetail::getCreditName, bankName)
+                    .eq(MyCreditCardDetail::getCreateTime, start));
+            BigDecimal spend = creditCardDetailList.stream().map(MyCreditCardDetail::getChangeAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            moneyList.add(spend.doubleValue());
+            dateList.add(start.toString("yyyy-MM-dd"));
+            start = DateUtil.offsetDay(start, 1);
+        }
+        DetailChartDTO detailChartDTO = new DetailChartDTO();
+        detailChartDTO.setDateList(dateList);
+        detailChartDTO.setMoneyList(moneyList);
+
+        return detailChartDTO;
+    }
+
+    @Override
     public boolean change(CreditCardChangeVO creditCardChangeVO) {
         MyCreditCardDetail creditCardDetail = new MyCreditCardDetail();
         creditCardDetail.setCreditName(creditCardChangeVO.getBankName());
         creditCardDetail.setChangeAmount(new BigDecimal(creditCardChangeVO.getChangeMoney()));
         creditCardDetail.setRemark(creditCardChangeVO.getReason());
-        creditCardDetail.setCreateTime(LocalDateTime.now());
+        creditCardDetail.setCreateTime(DateUtil.parseLocalDateTime(creditCardChangeVO.getCreateTime(), "yyyy-MM-dd"));
 
         return save(creditCardDetail);
     }

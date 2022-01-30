@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.maze.project.web.common.enums.ResponseCodeEnum.GET_CREDIT_CARD_DETAIL_CHART_ERROR;
+
 @RestController
 @RequestMapping(value = "creditCard")
 @Slf4j
@@ -133,6 +135,19 @@ public class CreditCardController {
         return BaseDTO.ok().data(bankInfoDTO);
     }
 
+    @GetMapping(value = "detailChart/{bankName}")
+    public BaseDTO getDetailChart(@PathVariable String bankName){
+        DetailChartDTO detailChartDTO = new DetailChartDTO();
+        try {
+            detailChartDTO = creditCardDetailService.getDetailChart(bankName);
+        }catch (Exception e){
+            log.error("=========查询信用卡详情图表异常==========");
+            throw new GlobalException(GET_CREDIT_CARD_DETAIL_CHART_ERROR);
+        }
+
+        return BaseDTO.ok().data(detailChartDTO);
+    }
+
     /**
      * 查询某银行卡的变动情况
      * @param detailPageVO 详情分页请求VO
@@ -145,7 +160,7 @@ public class CreditCardController {
             detailPageDTO = creditCardDetailService.getDetailPage(detailPageVO);
         }catch (Exception e){
             log.error("============查询现金银行卡异常==========={}", ExceptionUtil.getMessage(e));
-            throw new GlobalException(ResponseCodeEnum.GET_CASH_BANK_NAMES_ERROR);
+            throw new GlobalException(ResponseCodeEnum.GET_CREDIT_CARD_DETAIL_ERROR);
         }
         return BaseDTO.ok().data(detailPageDTO);
     }

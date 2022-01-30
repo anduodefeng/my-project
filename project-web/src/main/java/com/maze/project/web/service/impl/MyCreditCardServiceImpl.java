@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.maze.project.web.common.constant.CommonConstant;
 import com.maze.project.web.dto.credit_card.BankInfoDTO;
 import com.maze.project.web.dto.credit_card.CreditCardDTO;
 import com.maze.project.web.dto.credit_card.CreditCardPageDTO;
@@ -52,7 +51,6 @@ public class MyCreditCardServiceImpl extends ServiceImpl<MyCreditCardMapper, MyC
         List<Double> CMBList = new ArrayList<>();
         List<Double> PABList = new ArrayList<>();
         for (int i = 1; i < 13; i++){
-            String color = CommonConstant.randomColor();
             String dateStr = DateTime.now().year() + "-" + String.format("%02d", i);
             monthList.add(dateStr);
             DateTime date = DateUtil.parse(dateStr, "yyyy-MM");
@@ -71,8 +69,8 @@ public class MyCreditCardServiceImpl extends ServiceImpl<MyCreditCardMapper, MyC
 
         CreditChartDTO creditChartDTO = new CreditChartDTO();
         creditChartDTO.setMonthList(monthList);
-        creditChartDTO.setCMBList(CMBList);
-        creditChartDTO.setPABList(PABList);
+        creditChartDTO.setCmbList(CMBList);
+        creditChartDTO.setPabList(PABList);
 
         return creditChartDTO;
     }

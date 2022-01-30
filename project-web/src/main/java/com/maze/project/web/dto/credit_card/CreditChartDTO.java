@@ -9,7 +9,7 @@ public class CreditChartDTO {
 
     private List<String> monthList;
 
-    private List<Double> CMBList;
+    private List<Double> cmbList;
 
-    private List<Double> PABList;
+    private List<Double> pabList;
 }

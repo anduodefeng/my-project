@@ -19,4 +19,6 @@ public class CreditCardChangeVO {
     private String billDay;
     @NotBlank(message = "repayDay不能为空")
     private String repayDay;
+    @NotBlank(message = "变动时间不能为空")
+    private String createTime;
 }
