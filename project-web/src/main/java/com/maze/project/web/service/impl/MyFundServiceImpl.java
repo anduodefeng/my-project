@@ -172,7 +172,7 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
         List<String> dateList = new ArrayList<>();
         DateTime end = DateUtil.yesterday().setField(DateField.HOUR_OF_DAY, 0).setField(DateField.MINUTE,0).setField(DateField.SECOND, 0);
         DateTime start = DateUtil.offsetDay(end, -90);
-        DateTime myTime = DateUtil.parse("2022-01-26", "yyyy-MM-dd");
+        DateTime myTime = DateUtil.parse(CommonConstant.beginTime, "yyyy-MM-dd");
         DateTime loopTime;
         if (start.isBefore(myTime)){
             loopTime = myTime;
@@ -195,15 +195,26 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
         List<Double> totalList = new ArrayList<>();
         List<Double> principalList = new ArrayList<>();
         List<String> fundCode = fundList.stream().map(MyFund::getFundCode).collect(Collectors.toList());
+        BigDecimal lastTotal = BigDecimal.ZERO;
+        BigDecimal lastPrincipal = BigDecimal.ZERO;
         for (DateTime i = start ; i.isBefore(end); i = DateUtil.offsetDay(i, 1)){
             List<MyFundDetail> fundDetailList = fundDetailMapper.selectList(Wrappers.<MyFundDetail>lambdaQuery()
                     .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
                     .in(MyFundDetail::getFundCode, fundCode)
                     .eq(MyFundDetail::getCreateTime, i));
-            BigDecimal total = fundDetailList.stream().map(MyFundDetail::getNewMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal principal = fundDetailList.stream().map(MyFundDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal total;
+            BigDecimal principal;
+            if (CollectionUtil.isNotEmpty(fundDetailList)){
+                total = fundDetailList.stream().map(MyFundDetail::getNewMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                principal = fundDetailList.stream().map(MyFundDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
+            }else{
+                total = lastTotal;
+                principal = lastPrincipal;
+            }
             totalList.add(total.doubleValue());
             principalList.add(principal.doubleValue());
+            lastPrincipal = principal;
+            lastTotal = total;
         }
         Map<String, List<Double>> map = new HashMap<>();
         map.put("total", totalList);

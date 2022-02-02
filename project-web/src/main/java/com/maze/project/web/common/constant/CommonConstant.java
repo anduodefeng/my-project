@@ -1,7 +1,5 @@
 package com.maze.project.web.common.constant;
 
-import cn.hutool.core.util.RandomUtil;
-
 import java.text.DecimalFormat;
 
 public class CommonConstant {
@@ -26,10 +24,5 @@ public class CommonConstant {
         "#1891ac","#66c6ba","#a82ffc","#d988bc"
     };
 
-    public static final String beginTime = "2022-01-25";
-
-    public static String randomColor(){
-        int index = RandomUtil.randomInt(52);
-        return CommonConstant.FUND_CHART_COLOR[index];
-    }
+    public static final String beginTime = "2022-02-01";
 }

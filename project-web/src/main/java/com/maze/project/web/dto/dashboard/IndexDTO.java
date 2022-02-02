@@ -21,6 +21,9 @@ public class IndexDTO {
     List<String> dateList;
     List<Double> moneyList;
     List<Double> principalList;
+
+    List<List<Double>> profitEveryday;
+
     //指数基金收益率图
     private List<String> indexFundNameList;
     private List<ManyLineDTO> indexFundLine;

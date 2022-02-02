@@ -1,5 +1,6 @@
 package com.maze.project.web.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
@@ -171,7 +172,7 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
         List<String> dateList = new ArrayList<>();
         DateTime end = DateUtil.yesterday().setField(DateField.HOUR_OF_DAY, 0).setField(DateField.MINUTE,0).setField(DateField.SECOND, 0);
         DateTime start = DateUtil.offsetDay(end, -90);
-        DateTime myTime = DateUtil.parse("2022-01-25", "yyyy-MM-dd");
+        DateTime myTime = DateUtil.parse(CommonConstant.beginTime, "yyyy-MM-dd");
         DateTime loopTime;
         if (start.isBefore(myTime)){
             loopTime = myTime;
@@ -193,15 +194,26 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
         List<Double> totalList = new ArrayList<>();
         List<Double> principalList = new ArrayList<>();
         List<Integer> idList = portfolioList.stream().map(MyFundPortfolio::getId).collect(Collectors.toList());
+        BigDecimal lastTotal = BigDecimal.ZERO;
+        BigDecimal lastPrincipal = BigDecimal.ZERO;
         for (DateTime i = start ; i.isBefore(end); i = DateUtil.offsetDay(i, 1)){
-            List<MyFundPortfolioDetail> fundDetailList = portfolioDetailMapper.selectList(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
+            List<MyFundPortfolioDetail> portfolioDetailList = portfolioDetailMapper.selectList(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
                     .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
                     .in(MyFundPortfolioDetail::getFundPortfolioId, idList)
                     .eq(MyFundPortfolioDetail::getCreateTime, i));
-            BigDecimal total = fundDetailList.stream().map(MyFundPortfolioDetail::getNewAssets).reduce(BigDecimal.ZERO, BigDecimal::add);
-            BigDecimal principal = fundDetailList.stream().map(MyFundPortfolioDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal total;
+            BigDecimal principal;
+            if (CollectionUtil.isNotEmpty(portfolioDetailList)){
+                total = portfolioDetailList.stream().map(MyFundPortfolioDetail::getNewAssets).reduce(BigDecimal.ZERO, BigDecimal::add);
+                principal = portfolioDetailList.stream().map(MyFundPortfolioDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
+            }else {
+                total = lastTotal;
+                principal = lastPrincipal;
+            }
             totalList.add(total.doubleValue());
             principalList.add(principal.doubleValue());
+            lastTotal = total;
+            lastPrincipal = principal;
         }
         Map<String, List<Double>> map = new HashMap<>();
         map.put("total", totalList);

@@ -50,15 +50,16 @@ public class MyFundPortfolioDetailServiceImpl extends ServiceImpl<MyFundPortfoli
         List<MyFundPortfolioDetail> portfolioDetailList = list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
                 .eq(MyFundPortfolioDetail::getFundPortfolioId, portfolioId)
                 .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+                .ge(MyFundPortfolioDetail::getCreateTime, CommonConstant.beginTime)
                 .orderByAsc(MyFundPortfolioDetail::getCreateTime));
         for (MyFundPortfolioDetail portfolioDetail : portfolioDetailList){
             List<Double> changeList = new ArrayList<>();
             String date = DateUtil.format(portfolioDetail.getCreateTime(), "yyyy-MM-dd");
             BigDecimal oldMoney = portfolioDetail.getNewAssets().subtract(portfolioDetail.getChangeMoney());
-            changeList.add(oldMoney.doubleValue());
-            changeList.add(portfolioDetail.getNewAssets().doubleValue());
-            changeList.add(oldMoney.doubleValue());
-            changeList.add(portfolioDetail.getNewAssets().doubleValue());
+            changeList.add(0d);
+            changeList.add(portfolioDetail.getChangeMoney().doubleValue());
+            changeList.add(0d);
+            changeList.add(portfolioDetail.getChangeMoney().doubleValue());
             dateList.add(date);
             dataList.add(changeList);
 

@@ -93,15 +93,15 @@ public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyF
         List<MyFundDetail> fundDetailList = list(Wrappers.<MyFundDetail>lambdaQuery()
                 .eq(MyFundDetail::getFundCode, fundCode)
                 .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+                .ge(MyFundDetail::getCreateTime, CommonConstant.beginTime)
                 .orderByAsc(MyFundDetail::getCreateTime));
         for (MyFundDetail fundDetail : fundDetailList){
             List<Double> changeList = new ArrayList<>();
             String date = DateUtil.format(fundDetail.getCreateTime(), "yyyy-MM-dd");
-            BigDecimal oldMoney = fundDetail.getNewMoney().subtract(fundDetail.getChangeMoney());
-            changeList.add(oldMoney.doubleValue());
-            changeList.add(fundDetail.getNewMoney().doubleValue());
-            changeList.add(oldMoney.doubleValue());
-            changeList.add(fundDetail.getNewMoney().doubleValue());
+            changeList.add(0d);
+            changeList.add(fundDetail.getChangeMoney().doubleValue());
+            changeList.add(0d);
+            changeList.add(fundDetail.getChangeMoney().doubleValue());
             dateList.add(date);
             dataList.add(changeList);
 
