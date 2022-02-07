@@ -10,7 +10,7 @@ public class CreditCardDTO {
     /** 总额度 */
     private String limit;
     /** 剩余额度 */
-    private String leftAmount;
+    private String customAmount;
     /** 账单日 */
     private String billDate;
     /** 还款日 */

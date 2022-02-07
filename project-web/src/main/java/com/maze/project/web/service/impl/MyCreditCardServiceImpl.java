@@ -83,10 +83,15 @@ public class MyCreditCardServiceImpl extends ServiceImpl<MyCreditCardMapper, MyC
         IPage<MyCreditCard> iPage = page(page, Wrappers.<MyCreditCard>lambdaQuery().orderByDesc(MyCreditCard::getLeftAmount));
         if (CollectionUtil.isNotEmpty(iPage.getRecords())){
             creditCardList = iPage.getRecords().stream().map(creditCard -> {
+
+                List<MyCreditCardDetail> creditCardDetails = creditCardDetailService.list(Wrappers.<MyCreditCardDetail>lambdaQuery()
+                        .eq(MyCreditCardDetail::getCreditName, creditCard.getName())
+                        .between(MyCreditCardDetail::getCreateTime, DateUtil.beginOfMonth(DateTime.now()), DateUtil.endOfMonth(DateTime.now())));
+                BigDecimal customAmount = creditCardDetails.stream().map(MyCreditCardDetail::getChangeAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
                 CreditCardDTO creditCardDTO = new CreditCardDTO();
                 creditCardDTO.setBankName(creditCard.getName());
                 creditCardDTO.setLimit(String.valueOf(creditCard.getLimitAmount()));
-                creditCardDTO.setLeftAmount(String.valueOf(creditCard.getLeftAmount()));
+                creditCardDTO.setCustomAmount(String.valueOf(customAmount));
                 Map<String, String> map = calculateDays(creditCard.getRepaymentDate(), creditCard.getBillDate());
                 creditCardDTO.setBillDate(map.get("billDay"));
                 creditCardDTO.setRepayDate(map.get("repayDay"));
