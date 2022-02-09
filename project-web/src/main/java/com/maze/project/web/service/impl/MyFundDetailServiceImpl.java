@@ -123,7 +123,7 @@ public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyF
         List<FundDetailDTO> list = new ArrayList<>();
         Page<MyFundDetail> page = new Page<>(fundDetailPageVO.getPage(), fundDetailPageVO.getPageSize());
         IPage<MyFundDetail> fundDetailIPage = page(page, Wrappers.<MyFundDetail>lambdaQuery()
-                .eq(MyFundDetail::getFundCode, fundDetailPageVO.getCode()).orderByDesc(MyFundDetail::getCreateTime));
+                .eq(MyFundDetail::getFundCode, fundDetailPageVO.getCode()).orderByDesc(MyFundDetail::getCreateTime).orderByAsc(MyFundDetail::getType));
         if (CollectionUtil.isNotEmpty(fundDetailIPage.getRecords())){
             list = fundDetailIPage.getRecords().stream().map(myFundDetail -> {
                 FundDetailDTO fundDetailDTO = new FundDetailDTO();

@@ -79,7 +79,7 @@ public class MyCreditCardDetailServiceImpl extends ServiceImpl<MyCreditCardDetai
         List<DetailDTO> list = new ArrayList<>();
         Page<MyCreditCardDetail> page = new Page<>(detailPageVO.getPage(), detailPageVO.getPageSize());
         IPage<MyCreditCardDetail> detailIPage = page(page, Wrappers.<MyCreditCardDetail>lambdaQuery()
-                .eq(MyCreditCardDetail::getCreditName, detailPageVO.getBankName()).orderByDesc(MyCreditCardDetail::getCreditName));
+                .eq(MyCreditCardDetail::getCreditName, detailPageVO.getBankName()).orderByDesc(MyCreditCardDetail::getCreateTime));
         list = detailIPage.getRecords().stream().map(creditCardDetail -> {
             DetailDTO detailDTO = new DetailDTO();
             detailDTO.setBankName(creditCardDetail.getCreditName());
