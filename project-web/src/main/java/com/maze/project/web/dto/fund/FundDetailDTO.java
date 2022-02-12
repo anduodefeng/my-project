@@ -12,15 +12,9 @@ public class FundDetailDTO {
 
     private String name;
 
-    private String worth;
+    private String newAssets;
 
-    private String shares;
-
-    private String changeMoney;
-
-    private String type;
-
-    private String money;
+    private String profit;
 
     private String profitRate;
 

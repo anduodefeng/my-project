@@ -8,8 +8,6 @@ import com.maze.project.web.entity.MyFundDetail;
 import com.maze.project.web.vo.fund.FundChangeVO;
 import com.maze.project.web.vo.fund.FundDetailPageVO;
 
-import java.util.Map;
-
 /**
  * <p>
  * 我的基金明细 服务类
@@ -22,7 +20,7 @@ public interface MyFundDetailService extends IService<MyFundDetail> {
 
     FundDetailChartDTO getChart(String fundCode);
 
-    Map<String, Object> change(FundChangeVO fundChangeVO);
+    boolean change(FundChangeVO fundChangeVO);
 
     FundDetailPageDTO getFundDetail(FundDetailPageVO fundDetailPageVO);
 }

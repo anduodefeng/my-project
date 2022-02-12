@@ -3,14 +3,10 @@ package com.maze.project.web.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.maze.project.web.dto.portfolio.PortfolioChartDTO;
-import com.maze.project.web.dto.portfolio.PortfolioDTO;
-import com.maze.project.web.dto.portfolio.PortfolioInfoListDTO;
 import com.maze.project.web.dto.portfolio.PortfolioPageDTO;
 import com.maze.project.web.entity.MyFundPortfolio;
 import com.maze.project.web.vo.portfolio.PortfolioChangeVO;
 import com.maze.project.web.vo.portfolio.PortfolioPageVO;
-
-import java.util.Map;
 
 /**
  * <p>
@@ -26,9 +22,6 @@ public interface MyFundPortfolioService extends IService<MyFundPortfolio> {
 
     PortfolioPageDTO getPortfolioPage(PortfolioPageVO portfolioPageVO);
 
-    Map<String, Object> updatePortfolio(PortfolioChangeVO portfolioChangeVO);
+    Integer updatePortfolio(PortfolioChangeVO portfolioChangeVO);
 
-    PortfolioInfoListDTO getPortfolioInfos(String accountId);
-
-    PortfolioDTO getPortfolioInfo(String id);
 }

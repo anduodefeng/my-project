@@ -13,9 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.util.Map;
-
 @RestController
 @RequestMapping(value = "fund")
 @Slf4j
@@ -73,16 +70,14 @@ public class FundController {
     @Transactional(rollbackFor = Exception.class)
     public BaseDTO recordFundChange(@Validated @RequestBody FundChangeVO fundChangeVO){
         try {
-            Map<String, Object> map = fundDetailService.change(fundChangeVO);
-            boolean result = (boolean) map.get("result");
-            BigDecimal profitRate = (BigDecimal) map.get("rate");
+            boolean result = fundDetailService.change(fundChangeVO);
             if (result){
-                result = fundService.updateFund(fundChangeVO, profitRate);
+                result = fundService.updateFund(fundChangeVO);
                 if (!result){
                     throw new GlobalException(ResponseCodeEnum.UPDATE_FUND_ERROR);
                 }
             }else {
-                throw new GlobalException(ResponseCodeEnum.UPDATE_FUND_DETAIL_ERROOR);
+                throw new GlobalException(ResponseCodeEnum.UPDATE_FUND_DETAIL_ERROR);
             }
         }catch (Exception e){
             log.error("============记录现金明细异常==========={}", ExceptionUtil.getMessage(e));
@@ -90,44 +85,6 @@ public class FundController {
         }
         return BaseDTO.ok();
     }
-
-    /**
-     * @description: 获取基金分类情况
-     * @param: cashChangeVO
-     * @return: com.maze.project.web.dto.common.BaseDTO
-     * @author maze
-     * @date: 2021/12/19 16:20
-     */
-    @PostMapping(value = "fundInfos")
-    public BaseDTO getFundInfos(@RequestBody FundInfosVO fundInfosVO){
-        FundInfoListDTO fundInfoListDTO = new FundInfoListDTO();
-        try {
-            fundInfoListDTO = fundService.getFundInfos(fundInfosVO.getFundType());
-        }catch (Exception e){
-            log.error("============查询基金分类异常==========={}", ExceptionUtil.getMessage(e));
-            throw new GlobalException(ResponseCodeEnum.GET_FUNDS_INFO_ERROR);
-        }
-        return BaseDTO.ok().data(fundInfoListDTO);
-    }
-    /** 
-     * @description: 获取单个基金信息
-     * @param: code 
-     * @return: com.maze.project.web.dto.common.BaseDTO 
-     * @author maze
-     * @date: 2022/1/2 16:26
-     */
-    @PostMapping(value = "getFundInfo")
-    public BaseDTO getFundInfo(@RequestBody FundInfoVO fundInfoVO){
-        FundDTO fundDTO = new FundDTO();
-        try {
-            fundDTO = fundService.getFundInfo(fundInfoVO.getCode());
-        }catch (Exception e){
-            log.error("============查询基金信息异常==========={}", ExceptionUtil.getMessage(e));
-            throw new GlobalException(ResponseCodeEnum.GET_FUND_INFO_ERROR);
-        }
-        return BaseDTO.ok().data(fundDTO);
-    }
-
 
     @GetMapping("detail/chart/{fundCode}")
     public BaseDTO fundDetailChart(@PathVariable String fundCode){

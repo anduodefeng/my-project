@@ -10,16 +10,16 @@ public class PortfolioChangeVO {
     private String portfolioId;
     @NotBlank(message = "投顾组合不能为空")
     private String name;
-    @NotBlank(message = "变动金额不能为空")
-    private String changeMoney;
-    @NotBlank(message = "原因不能为空")
-    private String remark;
-    @NotBlank(message = "changeType不能为空")
-    private String changeType;
+    @NotBlank(message = "总金额不能为空")
+    private String newMoney;
     @NotBlank(message = "accountId不能为空")
     private String accountId;
     @NotBlank(message = "accountName不能为空")
     private String accountName;
+    @NotBlank(message = "收益不能为空")
+    private String profit;
+    @NotBlank(message = "收益率不能为空")
+    private String profitRate;
     /**
      * 组合类型 0-稳健 1-积极  2-定投
      */

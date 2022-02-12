@@ -49,12 +49,6 @@ public class MyFundPortfolio implements Serializable {
     @TableField("account_id")
     private Integer accountId;
 
-    @TableField("create_time")
-    private LocalDateTime createTime;
-
-    @TableField("update_time")
-    private LocalDateTime updateTime;
-
     /**
      * 账户名称
      */
@@ -82,6 +76,12 @@ public class MyFundPortfolio implements Serializable {
      */
     @TableField("profit_rate")
     private BigDecimal profitRate;
+
+    @TableField("create_time")
+    private LocalDateTime createTime;
+
+    @TableField("update_time")
+    private LocalDateTime updateTime;
 
 
 }

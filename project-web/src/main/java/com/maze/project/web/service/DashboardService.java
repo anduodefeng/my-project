@@ -122,16 +122,16 @@ public class DashboardService {
     private double yesterdayProfit(){
         DateTime yesterday = DateUtil.yesterday();
         List<MyFundDetail> fundDetail = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
-                .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+//                .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
                 .eq(MyFundDetail::getCreateTime, yesterday.toString("yyyy-MM-dd")));
-        BigDecimal fundDetailProfit = CollUtil.isEmpty(fundDetail) ? BigDecimal.ZERO :
-                fundDetail.stream().map(MyFundDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal fundDetailProfit = CollUtil.isEmpty(fundDetail) ? BigDecimal.ZERO : BigDecimal.ZERO;
+//                fundDetail.stream().map(MyFundDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
 
         List<MyFundPortfolioDetail> portfolioDetail = portfolioDetailService.list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
-                .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+//                .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
                 .eq(MyFundPortfolioDetail::getCreateTime, yesterday.toString("yyyy-MM-dd")));
-        BigDecimal portfolioProfit = CollUtil.isEmpty(portfolioDetail) ? BigDecimal.ZERO :
-                portfolioDetail.stream().map(MyFundPortfolioDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal portfolioProfit = CollUtil.isEmpty(portfolioDetail) ? BigDecimal.ZERO : BigDecimal.ZERO;
+//                portfolioDetail.stream().map(MyFundPortfolioDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return fundDetailProfit.add(portfolioProfit).doubleValue();
     }
@@ -214,7 +214,7 @@ public class DashboardService {
         while (start.isBefore(end)){
             dateList.add(start.toString("yyyy-MM-dd"));
             List<MyFundDetail> monetaryFundDetail = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
-                    .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+//                    .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
                     .eq(MyFundDetail::getFundCode, "TTXJGS01200001")
                     .eq(MyFundDetail::getCreateTime, start));
             BigDecimal totalMonetaryFund;
@@ -226,10 +226,10 @@ public class DashboardService {
                 totalMonetaryFund = lastMonetaryFund;
                 totalMonetaryFundPrincipal = lastMonetaryFundPrincipal;
             }
-            BigDecimal monetaryFundProfit = monetaryFundDetail.stream().map(MyFundDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+//            BigDecimal monetaryFundProfit = monetaryFundDetail.stream().map(MyFundDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
 
             List<MyFundDetail> otherFundDetail = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
-                    .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+//                    .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
                     .ne(MyFundDetail::getFundCode, "TTXJGS01200001")
                     .eq(MyFundDetail::getCreateTime, start));
             BigDecimal totalOtherFund;
@@ -241,10 +241,10 @@ public class DashboardService {
                 totalOtherFund = lastOtherFund;
                 totalOtherFundPrincipal = lastOtherFundPrincipal;
             }
-            BigDecimal otherFundProfit = otherFundDetail.stream().map(MyFundDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+//            BigDecimal otherFundProfit = otherFundDetail.stream().map(MyFundDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
 
             List<MyFundPortfolioDetail> portfolioDetails = portfolioDetailService.list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
-                    .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+//                    .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
                     .eq(MyFundPortfolioDetail::getCreateTime, start));
             BigDecimal totalPortfolio;
             BigDecimal totalPrincipal;
@@ -255,14 +255,15 @@ public class DashboardService {
                 totalPortfolio = lastPortfolio;
                 totalPrincipal = lastPrincipal;
             }
-            BigDecimal portfolioProfit = portfolioDetails.stream().map(MyFundPortfolioDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+//            BigDecimal portfolioProfit = portfolioDetails.stream().map(MyFundPortfolioDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
 
             List<MyCash> cashList = cashService.list();
             BigDecimal cashMoney = cashList.stream().map(MyCash::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
             BigDecimal total = totalMonetaryFund.add(totalOtherFund).add(totalPortfolio).add(cashMoney);
             BigDecimal principal = totalPrincipal.add(totalMonetaryFundPrincipal).add(totalOtherFundPrincipal).add(cashMoney);
-            BigDecimal totalProfit = monetaryFundProfit.add(otherFundProfit).add(portfolioProfit);
+//            BigDecimal totalProfit = monetaryFundProfit.add(otherFundProfit).add(portfolioProfit);
+            BigDecimal totalProfit = BigDecimal.ZERO;
             assetList.add(total.doubleValue());
             principalList.add(principal.doubleValue());
 
@@ -308,7 +309,7 @@ public class DashboardService {
             manyLineDTO.setName(fund.getFundName());
             List<MyFundDetail> fundDetailList = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
                     .eq(MyFundDetail::getFundCode, fund.getFundCode())
-                    .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+//                    .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
                     .between(MyFundDetail::getCreateTime, start, end).orderByAsc(MyFundDetail::getCreateTime));
             List<Double> list = fundDetailList.stream().map(myFundDetail -> myFundDetail.getProfitRate().multiply(BigDecimal.valueOf(100)).doubleValue())
                     .collect(Collectors.toList());
@@ -340,7 +341,7 @@ public class DashboardService {
             manyLineDTO.setName(portfolio.getName());
             List<MyFundPortfolioDetail> portfolioDetailList = portfolioDetailService.list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
                     .eq(MyFundPortfolioDetail::getFundPortfolioId, portfolio.getId())
-                    .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
+//                    .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
                     .between(MyFundPortfolioDetail::getCreateTime, start, end).orderByAsc(MyFundPortfolioDetail::getCreateTime));
             List<Double> list = portfolioDetailList.stream().map(portfolioDetail -> portfolioDetail.getProfitRate().multiply(BigDecimal.valueOf(100)).doubleValue())
                     .collect(Collectors.toList());

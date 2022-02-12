@@ -1,18 +1,16 @@
 package com.maze.project.web.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.date.DateField;
-import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.maze.project.web.common.constant.CommonConstant;
-import com.maze.project.web.common.enums.FundEnum;
-import com.maze.project.web.dto.common.*;
-import com.maze.project.web.dto.fund.*;
+import com.maze.project.web.dto.common.PieDTO;
+import com.maze.project.web.dto.fund.FundChartDTO;
+import com.maze.project.web.dto.fund.FundDTO;
+import com.maze.project.web.dto.fund.FundPageDTO;
 import com.maze.project.web.entity.MyFund;
 import com.maze.project.web.entity.MyFundDetail;
 import com.maze.project.web.mapper.MyFundDetailMapper;
@@ -23,7 +21,6 @@ import com.maze.project.web.vo.fund.FundPageVO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,10 +48,8 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
     public FundChartDTO getChart(String fundType) {
         List<PieDTO> pieList = new ArrayList<>();
         List<MyFund> fundList = list(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getType, fundType));
-        Map<String,Object> map = getDate();
-        List<String> dateList = (List<String>) map.get("date");
-        DateTime start = (DateTime) map.get("start");
-        DateTime end = (DateTime) map.get("end");
+        Map<String,List<String>> map = getDate(fundList);
+        List<String> dateList = map.get("date");
         for (MyFund fund : fundList){
 
             PieDTO pieDTO = new PieDTO();
@@ -63,7 +58,7 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
             pieList.add(pieDTO);
 
         }
-        Map<String, List<Double>> totalMap = getTotal(fundList, start, end);
+        Map<String, List<Double>> totalMap = getTotal(fundList, dateList);
         FundChartDTO fundChartDTO = new FundChartDTO();
         fundChartDTO.setPieList(pieList);
         fundChartDTO.setDateList(dateList);
@@ -88,7 +83,7 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
                 fundDTO.setProfit(CommonConstant.DECIMAL_FORMAT.format(myFund.getProfit()));
                 fundDTO.setCreateTime(myFund.getCreateTime());
                 fundDTO.setUpdateTime(myFund.getUpdateTime());
-                fundDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(myFund.getProfitRate().multiply(BigDecimal.valueOf(100))));
+                fundDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(myFund.getProfitRate()));
                 return fundDTO;
             }).collect(Collectors.toList());
         }
@@ -101,120 +96,64 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
     }
 
     @Override
-    public boolean updateFund(FundChangeVO fundChangeVO, BigDecimal rate) {
+    public boolean updateFund(FundChangeVO fundChangeVO) {
+        BigDecimal newAssets = new BigDecimal(fundChangeVO.getNewMoney());
+        BigDecimal profit = new BigDecimal(fundChangeVO.getProfit());
+        BigDecimal principal = newAssets.multiply(profit);
         MyFund myFund = getOne(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getFundCode, fundChangeVO.getCode()));
         if (null != myFund){
-            myFund.setFundMoney(myFund.getFundMoney().add(new BigDecimal(fundChangeVO.getChangeMoney())));
+            myFund.setFundMoney(newAssets);
+            myFund.setProfit(profit);
+            myFund.setProfitRate(new BigDecimal(fundChangeVO.getProfitRate()));
+            myFund.setPrincipal(principal);
             myFund.setUpdateTime(DateUtil.parseLocalDateTime(fundChangeVO.getCreateTime(), "yyyy-MM-dd"));
-            if (FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode() == Integer.parseInt(fundChangeVO.getType())){
-                myFund.setProfit(myFund.getProfit().add(new BigDecimal(fundChangeVO.getChangeMoney())));
-            }else {
-                myFund.setPrincipal(myFund.getPrincipal().add(new BigDecimal(fundChangeVO.getChangeMoney())));
-            }
-            myFund.setProfitRate(rate);
         }else {
             myFund = new MyFund();
             myFund.setFundCode(fundChangeVO.getCode());
             myFund.setFundName(fundChangeVO.getName());
+            myFund.setFundMoney(newAssets);
+            myFund.setProfit(profit);
+            myFund.setProfitRate(new BigDecimal(fundChangeVO.getProfitRate()));
+            myFund.setPrincipal(principal);
             myFund.setType(Integer.parseInt(fundChangeVO.getFundType()));
-            myFund.setFundMoney(new BigDecimal(fundChangeVO.getChangeMoney()));
-            myFund.setProfit(BigDecimal.ZERO);
-            myFund.setPrincipal(new BigDecimal(fundChangeVO.getChangeMoney()));
-            myFund.setCreateTime(LocalDateTime.now());
-            myFund.setUpdateTime(LocalDateTime.now());
-            myFund.setType(Integer.parseInt(fundChangeVO.getFundType()));
-            myFund.setProfitRate(BigDecimal.ZERO);
+            myFund.setCreateTime(DateUtil.parseLocalDateTime(fundChangeVO.getCreateTime(), "yyyy-MM-dd"));
+            myFund.setUpdateTime(DateUtil.parseLocalDateTime(fundChangeVO.getCreateTime(), "yyyy-MM-dd"));
         }
         return saveOrUpdate(myFund);
     }
 
-    @Override
-    public FundInfoListDTO getFundInfos(String fundType) {
-        FundInfoListDTO fundInfoListDTO = new FundInfoListDTO();
-        List<FundInfoDTO> fundInfoDTOS = new ArrayList<>();
-        List<MyFund> myFunds = list(Wrappers.<MyFund>lambdaQuery().select(MyFund::getFundCode)
-                .eq(MyFund::getType, Integer.parseInt(fundType))
-                .groupBy(MyFund::getFundCode));
-        List<String> codes = myFunds.stream().map(MyFund::getFundCode).collect(Collectors.toList());
-        if (CollectionUtil.isNotEmpty(codes)){
-            myFunds = list(Wrappers.<MyFund>lambdaQuery().in(MyFund::getFundCode, codes));
-            if (CollectionUtil.isNotEmpty(myFunds)){
-                fundInfoDTOS = myFunds.stream().map(myFund -> {
-                    FundInfoDTO fundInfoDTO = new FundInfoDTO();
-                    fundInfoDTO.setCode(myFund.getFundCode());
-                    fundInfoDTO.setName(myFund.getFundName());
-                    return fundInfoDTO;
-                }).collect(Collectors.toList());
-            }
-        }
-        fundInfoListDTO.setFundInfos(fundInfoDTOS);
-        return fundInfoListDTO;
-    }
-
-    @Override
-    public FundDTO getFundInfo(String code) {
-        MyFund myFund = getOne(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getFundCode, StrUtil.nullToEmpty(code)));
-        FundDTO fundDTO = new FundDTO();
-        if (null != myFund){
-            fundDTO.setCode(myFund.getFundCode());
-            fundDTO.setName(myFund.getFundName());
-            fundDTO.setWorth(String.valueOf(myFund.getFundNetWorth()));
-            fundDTO.setShares(String.valueOf(myFund.getFundShares()));
-            fundDTO.setMoney(CommonConstant.DECIMAL_FORMAT.format(myFund.getFundMoney()));
-        }else{
-            fundDTO.setName(code);
-        }
-        return fundDTO;
-    }
-
-    private Map<String, Object> getDate(){
-        Map<String, Object> map = new HashMap<>();
+    private Map<String, List<String>> getDate(List<MyFund> fundList){
+        Map<String, List<String>> map = new HashMap<>();
         List<String> dateList = new ArrayList<>();
-        DateTime end = DateUtil.yesterday().setField(DateField.HOUR_OF_DAY, 0).setField(DateField.MINUTE,0).setField(DateField.SECOND, 0);
-        DateTime start = DateUtil.offsetDay(end, -90);
-        DateTime myTime = DateUtil.parse(CommonConstant.beginTime, "yyyy-MM-dd");
-        DateTime loopTime;
-        if (start.isBefore(myTime)){
-            loopTime = myTime;
-            start = myTime;
-        }else {
-            loopTime = start;
-        }
-        while (loopTime.isBefore(end)){
-            dateList.add(loopTime.toString("yyyy-MM-dd"));
-            loopTime = DateUtil.offsetDay(loopTime, 1);
+        if (CollectionUtil.isNotEmpty(fundList)){
+            List<String> fundCodes = fundList.stream().map(MyFund::getFundCode).collect(Collectors.toList());
+            List<MyFundDetail> myFundDetails = fundDetailMapper.selectList(Wrappers.<MyFundDetail>lambdaQuery().select(MyFundDetail::getCreateTime).in(MyFundDetail::getFundCode, fundCodes)
+                    .groupBy(MyFundDetail::getCreateTime));
+            dateList = myFundDetails.stream().map(myFundDetail -> DateUtil.format(myFundDetail.getCreateTime(),"yyyy-MM-dd"))
+                    .collect(Collectors.toList());
         }
         map.put("date", dateList);
-        map.put("start", start);
-        map.put("end", end);
         return map;
     }
 
 
-    private Map<String, List<Double>> getTotal(List<MyFund> fundList, DateTime start, DateTime end){
+    private Map<String, List<Double>> getTotal(List<MyFund> fundList, List<String> dateList){
         List<Double> totalList = new ArrayList<>();
         List<Double> principalList = new ArrayList<>();
-        List<String> fundCode = fundList.stream().map(MyFund::getFundCode).collect(Collectors.toList());
-        BigDecimal lastTotal = BigDecimal.ZERO;
-        BigDecimal lastPrincipal = BigDecimal.ZERO;
-        for (DateTime i = start ; i.isBefore(end); i = DateUtil.offsetDay(i, 1)){
-            List<MyFundDetail> fundDetailList = fundDetailMapper.selectList(Wrappers.<MyFundDetail>lambdaQuery()
-                    .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
-                    .in(MyFundDetail::getFundCode, fundCode)
-                    .eq(MyFundDetail::getCreateTime, i));
-            BigDecimal total;
-            BigDecimal principal;
-            if (CollectionUtil.isNotEmpty(fundDetailList)){
-                total = fundDetailList.stream().map(MyFundDetail::getNewMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-                principal = fundDetailList.stream().map(MyFundDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
-            }else{
-                total = lastTotal;
-                principal = lastPrincipal;
+        for (String date : dateList){
+            if (CollectionUtil.isNotEmpty(fundList)){
+                List<String> fundCode = fundList.stream().map(MyFund::getFundCode).collect(Collectors.toList());
+                List<MyFundDetail> fundDetailList = fundDetailMapper.selectList(Wrappers.<MyFundDetail>lambdaQuery()
+                        .in(MyFundDetail::getFundCode, fundCode)
+                        .eq(MyFundDetail::getCreateTime, date));
+                BigDecimal total = fundDetailList.stream().map(MyFundDetail::getNewMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal principal = fundDetailList.stream().map(MyFundDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                totalList.add(total.doubleValue());
+                principalList.add(principal.doubleValue());
             }
-            totalList.add(total.doubleValue());
-            principalList.add(principal.doubleValue());
-            lastPrincipal = principal;
-            lastTotal = total;
+
+
         }
         Map<String, List<Double>> map = new HashMap<>();
         map.put("total", totalList);

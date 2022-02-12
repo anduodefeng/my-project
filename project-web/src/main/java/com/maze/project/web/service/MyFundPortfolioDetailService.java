@@ -20,7 +20,7 @@ public interface MyFundPortfolioDetailService extends IService<MyFundPortfolioDe
 
     PortfolioDetailChartDTO getChart(String portfolioId);
 
-    boolean change(PortfolioChangeVO portfolioChangeVO);
+    boolean change(PortfolioChangeVO portfolioChangeVO, Integer id);
 
     PortfolioDetailPageDTO getPortfolioDetail(PortfolioDetailPageVO portfolioDetailPageVO);
 }

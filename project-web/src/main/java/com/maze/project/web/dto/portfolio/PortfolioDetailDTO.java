@@ -10,9 +10,9 @@ public class PortfolioDetailDTO {
 
     private String name;
 
-    private String changeMoney;
+    private String newMoney;
 
-    private String changeType;
+    private String profit;
 
     private String profitRate;
 

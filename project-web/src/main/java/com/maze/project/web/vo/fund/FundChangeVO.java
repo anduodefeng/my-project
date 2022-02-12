@@ -11,16 +11,14 @@ public class FundChangeVO {
     private String code;
     @NotBlank(message = "基金名称不能为空")
     private String name;
-    private String worth;
-    private String shares;
     @NotBlank(message = "变动金额不能为空")
-    private String  changeMoney;
-    @NotBlank(message = "变动类型不能为空")
-    private String type;
+    private String newMoney;
     @NotBlank(message = "基金类型不能为空")
     private String fundType;
     @NotBlank(message = "变动时间不能为空")
     private String createTime;
-
-    private String remark;
+    @NotBlank(message = "收益不能为空")
+    private String profit;
+    @NotBlank(message = "收益率不能为空")
+    private String profitRate;
 }

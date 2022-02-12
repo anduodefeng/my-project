@@ -42,43 +42,15 @@ public class MyFundDetail implements Serializable {
      */
     @TableField("fund_name")
     private String fundName;
-
     /**
-     * 基金份额
+     * 新资产
      */
-    @TableField("fund_shares")
-    private BigDecimal fundShares;
-
-    /**
-     * 变动金额
-     */
-    @TableField("change_money")
-    private BigDecimal changeMoney;
-
-    /**
-     * 基金净值
-     */
-    @TableField("fund_worth")
-    private BigDecimal fundWorth;
-
-    @TableField("create_time")
-    private LocalDateTime createTime;
-
-    /**
-     * 备注
-     */
-    @TableField("remark")
-    private String remark;
-
-    /**
-     * 类型 0-本金变动 1-资产更新
-     */
-    @TableField("type")
-    private Integer type;
-
     @TableField("new_money")
     private BigDecimal newMoney;
 
+    /**
+     * 本金
+     */
     @TableField("profit_rate")
     private BigDecimal profitRate;
     /**
@@ -86,5 +58,15 @@ public class MyFundDetail implements Serializable {
      */
     @TableField("principal")
     private BigDecimal principal;
+    /**
+     * 盈利
+     */
+    @TableField("profit")
+    private BigDecimal profit;
+    /**
+     * 创建时间
+     */
+    @TableField("create_time")
+    private LocalDateTime createTime;
 
 }

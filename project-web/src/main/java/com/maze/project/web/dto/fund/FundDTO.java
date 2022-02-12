@@ -12,10 +12,6 @@ public class FundDTO {
 
     private String name;
 
-    private String worth;
-
-    private String shares;
-
     private String money;
 
     private String principal;

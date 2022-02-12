@@ -1,17 +1,16 @@
 package com.maze.project.web.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.date.DateField;
-import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.maze.project.web.common.constant.CommonConstant;
-import com.maze.project.web.common.enums.FundEnum;
 import com.maze.project.web.dto.common.PieDTO;
-import com.maze.project.web.dto.portfolio.*;
+import com.maze.project.web.dto.portfolio.PortfolioChartDTO;
+import com.maze.project.web.dto.portfolio.PortfolioDTO;
+import com.maze.project.web.dto.portfolio.PortfolioPageDTO;
 import com.maze.project.web.entity.MyFundPortfolio;
 import com.maze.project.web.entity.MyFundPortfolioDetail;
 import com.maze.project.web.mapper.MyFundPortfolioDetailMapper;
@@ -22,7 +21,6 @@ import com.maze.project.web.vo.portfolio.PortfolioPageVO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,11 +48,9 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
     @Override
     public PortfolioChartDTO getChart(String accountId) {
         List<PieDTO> pieList = new ArrayList<>();
-        Map<String,Object> map = getDate();
-        List<String> dateList = (List<String>) map.get("date");
-        DateTime start = (DateTime) map.get("start");
-        DateTime end = (DateTime) map.get("end");
         List<MyFundPortfolio> portfolioList = list(Wrappers.<MyFundPortfolio>lambdaQuery().eq(MyFundPortfolio::getAccountId, accountId));
+        Map<String, List<String>> map = getDate(portfolioList);
+        List<String> dateList = map.get("date");
         for (MyFundPortfolio portfolio : portfolioList){
 
             PieDTO pieDTO = new PieDTO();
@@ -63,7 +59,7 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
             pieList.add(pieDTO);
 
         }
-        Map<String, List<Double>> totalMap = getTotal(portfolioList, start, end);
+        Map<String, List<Double>> totalMap = getTotal(portfolioList, dateList);
         PortfolioChartDTO portfolioChartDTO = new PortfolioChartDTO();
         portfolioChartDTO.setPieList(pieList);
         portfolioChartDTO.setDateList(dateList);
@@ -87,7 +83,7 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
             portfolioDTO.setMoney(CommonConstant.DECIMAL_FORMAT.format(fundPortfolio.getMoney()));
             portfolioDTO.setPrincipal(CommonConstant.DECIMAL_FORMAT.format(fundPortfolio.getPrincipal()));
             portfolioDTO.setProfit(CommonConstant.DECIMAL_FORMAT.format(fundPortfolio.getProfit()));
-            portfolioDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(fundPortfolio.getProfitRate().multiply(BigDecimal.valueOf(100))));
+            portfolioDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(fundPortfolio.getProfitRate()));
             portfolioDTO.setUpdateTime(fundPortfolio.getUpdateTime());
             portfolioDTO.setCreateTime(fundPortfolio.getCreateTime());
             list.add(portfolioDTO);
@@ -100,120 +96,66 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
     }
 
     @Override
-    public Map<String, Object> updatePortfolio(PortfolioChangeVO portfolioChangeVO) {
+    public Integer updatePortfolio(PortfolioChangeVO portfolioChangeVO) {
+        BigDecimal newAssets = new BigDecimal(portfolioChangeVO.getNewMoney());
+        BigDecimal profit = new BigDecimal(portfolioChangeVO.getProfit());
+        BigDecimal principal = newAssets.multiply(profit);
         MyFundPortfolio portfolio = getById(portfolioChangeVO.getPortfolioId());
         if (null != portfolio){
-            portfolio.setMoney(portfolio.getMoney().add(new BigDecimal(portfolioChangeVO.getChangeMoney())));
-            if (FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode() == Integer.parseInt(portfolioChangeVO.getChangeType())){
-                portfolio.setProfit(portfolio.getProfit().add(new BigDecimal(portfolioChangeVO.getChangeMoney())));
-            }else {
-                portfolio.setPrincipal(portfolio.getPrincipal().add(new BigDecimal(portfolioChangeVO.getChangeMoney())));
-            }
-            BigDecimal profitRate = portfolio.getProfit().divide(portfolio.getPrincipal(), 4, RoundingMode.HALF_UP);
-            portfolio.setProfitRate(profitRate);
+            portfolio.setMoney(newAssets);
+            portfolio.setProfit(profit);
+            portfolio.setProfitRate(new BigDecimal(portfolioChangeVO.getProfitRate()));
+            portfolio.setPrincipal(principal);
         }else {
             portfolio = new MyFundPortfolio();
             portfolio.setName(portfolioChangeVO.getName());
-            portfolio.setMoney(new BigDecimal(portfolioChangeVO.getChangeMoney()));
-            portfolio.setPrincipal(new BigDecimal(portfolioChangeVO.getChangeMoney()));
+            portfolio.setMoney(newAssets);
+            portfolio.setPrincipal(principal);
             portfolio.setAccountId(Integer.parseInt(portfolioChangeVO.getAccountId()));
             portfolio.setAccountName(portfolioChangeVO.getAccountName());
+            portfolio.setProfit(profit);
+            portfolio.setProfitRate(new BigDecimal(portfolioChangeVO.getProfitRate()));
             portfolio.setCreateTime(DateUtil.parseLocalDateTime(portfolioChangeVO.getCreateTime(), "yyyy-MM-dd"));
-            portfolio.setProfit(BigDecimal.ZERO);
-            portfolio.setProfitRate(BigDecimal.ZERO);
         }
         portfolio.setType(Integer.parseInt(portfolioChangeVO.getType()));
         portfolio.setUpdateTime(DateUtil.parseLocalDateTime(portfolioChangeVO.getCreateTime(), "yyyy-MM-dd"));
-        boolean result = saveOrUpdate(portfolio);
-        Map<String, Object> map = new HashMap<>();
-        map.put("result", result);
-        map.put("portfolio", portfolio);
-        return map;
-    }
-
-    @Override
-    public PortfolioInfoListDTO getPortfolioInfos(String accountId) {
-        PortfolioInfoListDTO portfolioInfoListDTO = new PortfolioInfoListDTO();
-        List<PortfolioInfoDTO> portfolioInfoDTOS = new ArrayList<>();
-        List<MyFundPortfolio> myPortfolios = list(Wrappers.<MyFundPortfolio>lambdaQuery()
-                .eq(MyFundPortfolio::getAccountId, Integer.parseInt(accountId)));
-        for (MyFundPortfolio portfolio : myPortfolios){
-            PortfolioInfoDTO portfolioInfoDTO = new PortfolioInfoDTO();
-            portfolioInfoDTO.setId(String.valueOf(portfolio.getId()));
-            portfolioInfoDTO.setName(portfolio.getName());
-            portfolioInfoDTOS.add(portfolioInfoDTO);
-        }
-        portfolioInfoListDTO.setPortfolioInfoDTOS(portfolioInfoDTOS);
-        return portfolioInfoListDTO;
-    }
-
-    @Override
-    public PortfolioDTO getPortfolioInfo(String id) {
-        MyFundPortfolio myFundPortfolio = getById(id);
-        PortfolioDTO portfolioDTO = new PortfolioDTO();
-        if (null != myFundPortfolio){
-            portfolioDTO.setId(String.valueOf(myFundPortfolio.getId()));
-            portfolioDTO.setName(myFundPortfolio.getName());
-            portfolioDTO.setMoney(CommonConstant.DECIMAL_FORMAT.format(myFundPortfolio.getMoney()));
-            portfolioDTO.setPrincipal(CommonConstant.DECIMAL_FORMAT.format(myFundPortfolio.getPrincipal()));
-            portfolioDTO.setProfit(CommonConstant.DECIMAL_FORMAT.format(myFundPortfolio.getProfit()));
-            portfolioDTO.setType(String.valueOf(myFundPortfolio.getType()));
-            portfolioDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(myFundPortfolio.getProfitRate()));
-            portfolioDTO.setUpdateTime(myFundPortfolio.getUpdateTime());
-        }else{
-            portfolioDTO.setName(id);
-        }
-        return portfolioDTO;
+        saveOrUpdate(portfolio);
+        return portfolio.getId();
     }
 
 
-    private Map<String, Object> getDate(){
-        Map<String, Object> map = new HashMap<>();
+    private Map<String, List<String>> getDate(List<MyFundPortfolio> portfolioList){
+        Map<String, List<String>> map = new HashMap<>();
         List<String> dateList = new ArrayList<>();
-        DateTime end = DateUtil.yesterday().setField(DateField.HOUR_OF_DAY, 0).setField(DateField.MINUTE,0).setField(DateField.SECOND, 0);
-        DateTime start = DateUtil.offsetDay(end, -90);
-        DateTime myTime = DateUtil.parse(CommonConstant.beginTime, "yyyy-MM-dd");
-        DateTime loopTime;
-        if (start.isBefore(myTime)){
-            loopTime = myTime;
-            start = myTime;
-        }else {
-            loopTime = start;
-        }
-        while (loopTime.isBefore(end)){
-            dateList.add(loopTime.toString("yyyy-MM-dd"));
-            loopTime = DateUtil.offsetDay(loopTime, 1);
+        if (CollectionUtil.isNotEmpty(portfolioList)){
+            List<Integer> portfolios = portfolioList.stream().map(MyFundPortfolio::getId).collect(Collectors.toList());
+            List<MyFundPortfolioDetail> myPortfolioDetails = portfolioDetailMapper.selectList(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
+                    .select(MyFundPortfolioDetail::getCreateTime).in(MyFundPortfolioDetail::getFundPortfolioId, portfolios)
+                    .groupBy(MyFundPortfolioDetail::getCreateTime));
+            dateList = myPortfolioDetails.stream().map(portfolioDetail -> DateUtil.format(portfolioDetail.getCreateTime(),"yyyy-MM-dd"))
+                    .collect(Collectors.toList());
         }
         map.put("date", dateList);
-        map.put("start", start);
-        map.put("end", end);
         return map;
     }
 
-    private Map<String, List<Double>> getTotal(List<MyFundPortfolio> portfolioList, DateTime start, DateTime end){
+    private Map<String, List<Double>> getTotal(List<MyFundPortfolio> portfolioList, List<String> dateList){
         List<Double> totalList = new ArrayList<>();
         List<Double> principalList = new ArrayList<>();
-        List<Integer> idList = portfolioList.stream().map(MyFundPortfolio::getId).collect(Collectors.toList());
-        BigDecimal lastTotal = BigDecimal.ZERO;
-        BigDecimal lastPrincipal = BigDecimal.ZERO;
-        for (DateTime i = start ; i.isBefore(end); i = DateUtil.offsetDay(i, 1)){
-            List<MyFundPortfolioDetail> portfolioDetailList = portfolioDetailMapper.selectList(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
-                    .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
-                    .in(MyFundPortfolioDetail::getFundPortfolioId, idList)
-                    .eq(MyFundPortfolioDetail::getCreateTime, i));
-            BigDecimal total;
-            BigDecimal principal;
-            if (CollectionUtil.isNotEmpty(portfolioDetailList)){
-                total = portfolioDetailList.stream().map(MyFundPortfolioDetail::getNewAssets).reduce(BigDecimal.ZERO, BigDecimal::add);
-                principal = portfolioDetailList.stream().map(MyFundPortfolioDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
-            }else {
-                total = lastTotal;
-                principal = lastPrincipal;
+        for (String date : dateList){
+            if (CollectionUtil.isNotEmpty(portfolioList)){
+                List<Integer> idList = portfolioList.stream().map(MyFundPortfolio::getId).collect(Collectors.toList());
+                List<MyFundPortfolioDetail> portfolioDetailList = portfolioDetailMapper.selectList(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
+                        .in(MyFundPortfolioDetail::getFundPortfolioId, idList)
+                        .eq(MyFundPortfolioDetail::getCreateTime, date));
+                BigDecimal total = portfolioDetailList.stream().map(MyFundPortfolioDetail::getNewAssets).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal principal = portfolioDetailList.stream().map(MyFundPortfolioDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                totalList.add(total.doubleValue());
+                principalList.add(principal.doubleValue());
             }
-            totalList.add(total.doubleValue());
-            principalList.add(principal.doubleValue());
-            lastTotal = total;
-            lastPrincipal = principal;
+
+
         }
         Map<String, List<Double>> map = new HashMap<>();
         map.put("total", totalList);

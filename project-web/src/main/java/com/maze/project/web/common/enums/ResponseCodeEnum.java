@@ -11,13 +11,11 @@ public enum ResponseCodeEnum {
     GET_CASH_BANK_NAMES_ERROR(2005, "查询现金银行卡异常"),
     GET_FUND_PAGE_ERROR(2006, "分页查询基金异常"),
     UPDATE_FUND_ERROR(2007, "更新基金异常"),
-    UPDATE_FUND_DETAIL_ERROOR(2008, "更新基金详情异常"),
-    GET_FUNDS_INFO_ERROR(2009, "查询基金分类信息异常"),
-    GET_FUND_INFO_ERROR(2009, "查询单个基金信息异常"),
+    UPDATE_FUND_DETAIL_ERROR(2008, "更新基金详情异常"),
     RECORD_FUND_CHANGE_EXCEPTION(2010, "记录基金明细异常"),
     GET_PORTFOLIO_PAGE_ERROR(2011, "分页查询投顾组合异常"),
-    GET_PORTFOLIOS_INFO_ERROR(2012, "查询组合分类异常"),
-    GET_PORTFOLIO_INFO_ERROR(2012, "查询单个组合信息异常"),
+    UPDATE_PORTFOLIOS_INFO_ERROR(2012, "更新基金组合异常"),
+    UPDATE_PORTFOLIO_DETAIL_ERROR(2012, "更新组合详情信息异常"),
     GET_PORTFOLIO_CHANGE_ERROR(2013, "查询组合变动异常"),
     FIND_CASH_CHART_ERROR(2014, "查询现金图表异常"),
     FIND_FUND_CHART_ERROR(2015, "查询基金图表异常"),
@@ -32,6 +30,7 @@ public enum ResponseCodeEnum {
     FIND_INDEX_ERROR(2014, "查询首页异常"),
     GET_CREDIT_CARD_DETAIL_CHART_ERROR(2015, "查询信用卡详情图表异常"),
     GET_CREDIT_CARD_DETAIL_ERROR(2016, "查询信用卡详情异常"),
+    RECORD_PORTFOLIO_CHANGE_EXCEPTION(2017, "记录基金明细异常"),
     ERROR(9999, "系统错误");
 
     //2开头的，系统错误

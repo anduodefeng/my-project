@@ -1,13 +1,11 @@
 package com.maze.project.web.controller;
 
-import cn.hutool.core.util.StrUtil;
 import com.maze.project.web.common.enums.ResponseCodeEnum;
 import com.maze.project.web.common.exception.GlobalException;
 import com.maze.project.web.common.util.ExceptionUtil;
 import com.maze.project.web.dto.PortfolioDetailChartDTO;
 import com.maze.project.web.dto.common.BaseDTO;
 import com.maze.project.web.dto.portfolio.*;
-import com.maze.project.web.entity.MyFundPortfolio;
 import com.maze.project.web.service.MyFundPortfolioDetailService;
 import com.maze.project.web.service.MyFundPortfolioService;
 import com.maze.project.web.vo.portfolio.*;
@@ -15,8 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -75,63 +71,22 @@ public class PortfolioController {
     @Transactional(rollbackFor = Exception.class)
     public BaseDTO recordPortfolioChange(@Validated @RequestBody PortfolioChangeVO portfolioChangeVO){
         try {
-            Map<String, Object> map = portfolioService.updatePortfolio(portfolioChangeVO);
-            boolean result = (boolean) map.get("result");
-            MyFundPortfolio portfolio = (MyFundPortfolio) map.get("portfolio");
-            if (result){
-                if (StrUtil.isBlank(portfolioChangeVO.getPortfolioId())){
-                    portfolioChangeVO.setPortfolioId(String.valueOf(portfolio.getId()));
-                }
-                result = portfolioDetailService.change(portfolioChangeVO);
+            Integer id = portfolioService.updatePortfolio(portfolioChangeVO);
+            if (null != id){
+                boolean result = portfolioDetailService.change(portfolioChangeVO, id);
                 if (!result){
-                    throw new GlobalException(ResponseCodeEnum.UPDATE_FUND_DETAIL_ERROOR);
+                    throw new GlobalException(ResponseCodeEnum.UPDATE_PORTFOLIO_DETAIL_ERROR);
                 }
             }else {
-                throw new GlobalException(ResponseCodeEnum.UPDATE_FUND_ERROR);
+                throw new GlobalException(ResponseCodeEnum.UPDATE_PORTFOLIOS_INFO_ERROR);
             }
         }catch (Exception e){
-            log.error("============记录现金明细异常==========={}", ExceptionUtil.getMessage(e));
-            throw new GlobalException(ResponseCodeEnum.RECORD_FUND_CHANGE_EXCEPTION);
+            log.error("============记录基金组合明细异常==========={}", ExceptionUtil.getMessage(e));
+            throw new GlobalException(ResponseCodeEnum.RECORD_PORTFOLIO_CHANGE_EXCEPTION);
         }
         return BaseDTO.ok();
     }
 
-    /**
-     * @description: 获取组合分类情况
-     * @param: cashChangeVO
-     * @return: com.maze.project.web.dto.common.BaseDTO
-     * @author maze
-     * @date: 2021/12/19 16:20
-     */
-    @PostMapping(value = "infos")
-    public BaseDTO getPortfolioInfos(@Validated @RequestBody PortfolioInfosVO portfolioInfosVO){
-        PortfolioInfoListDTO portfolioInfoListDTO = new PortfolioInfoListDTO();
-        try {
-            portfolioInfoListDTO = portfolioService.getPortfolioInfos(portfolioInfosVO.getAccountId());
-        }catch (Exception e){
-            log.error("============查询组合分类异常==========={}", ExceptionUtil.getMessage(e));
-            throw new GlobalException(ResponseCodeEnum.GET_PORTFOLIOS_INFO_ERROR);
-        }
-        return BaseDTO.ok().data(portfolioInfoListDTO);
-    }
-    /**
-     * @description: 获取单个基金组合信息
-     * @param: portfolioInfoVO
-     * @return: com.maze.project.web.dto.common.BaseDTO
-     * @author maze
-     * @date: 2022/1/2 16:26
-     */
-    @PostMapping(value = "info")
-    public BaseDTO getPortfolioInfo(@Validated @RequestBody PortfolioInfoVO portfolioInfoVO){
-        PortfolioDTO portfolioDTO = new PortfolioDTO();
-        try {
-            portfolioDTO = portfolioService.getPortfolioInfo(portfolioInfoVO.getId());
-        }catch (Exception e){
-            log.error("============查询基金组合信息异常==========={}", ExceptionUtil.getMessage(e));
-            throw new GlobalException(ResponseCodeEnum.GET_PORTFOLIO_INFO_ERROR);
-        }
-        return BaseDTO.ok().data(portfolioDTO);
-    }
 
     @GetMapping("detail/chart/{id}")
     public BaseDTO portfolioDetailChart(@PathVariable String id){

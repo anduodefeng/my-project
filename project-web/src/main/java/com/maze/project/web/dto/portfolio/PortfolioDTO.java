@@ -20,7 +20,7 @@ public class PortfolioDTO {
 
     private String profitRate;
 
-    private String type;
+//    private String type;
 
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private LocalDateTime createTime;

@@ -41,25 +41,16 @@ public class MyFundPortfolioDetail implements Serializable {
     private String fundPortfolioName;
 
     /**
-     * 变动金额
-     */
-    @TableField("change_money")
-    private BigDecimal changeMoney;
-
-    /**
      * 新资产
      */
     @TableField("new_assets")
     private BigDecimal newAssets;
 
-    @TableField("create_time")
-    private LocalDateTime createTime;
-
     /**
-     * 备注
+     * 收益
      */
-    @TableField("remark")
-    private String remark;
+    @TableField("profit")
+    private BigDecimal profit;
 
     /**
      * 收益率
@@ -68,14 +59,12 @@ public class MyFundPortfolioDetail implements Serializable {
     private BigDecimal profitRate;
 
     /**
-     * 变动类型 0-转入or转出 1-日常更新
-     */
-    @TableField("type")
-    private Integer type;
-
-    /**
      * 本金
      */
     @TableField("principal")
     private BigDecimal principal;
+
+
+    @TableField("create_time")
+    private LocalDateTime createTime;
 }
