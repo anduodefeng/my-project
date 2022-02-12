@@ -35,7 +35,7 @@ public class MyCashDetailServiceImpl extends ServiceImpl<MyCashDetailMapper, MyC
     public boolean change(CashChangeVO cashChangeVO) {
         MyCashDetail myCashDetail = new MyCashDetail();
         myCashDetail.setBankName(cashChangeVO.getBankName());
-        myCashDetail.setChangeAmount(new BigDecimal(cashChangeVO.getChangeMoney()));
+        myCashDetail.setNewAmount(new BigDecimal(cashChangeVO.getChangeMoney()));
         myCashDetail.setReason(cashChangeVO.getReason());
         myCashDetail.setCreateTime(LocalDateTime.now());
 
@@ -51,7 +51,8 @@ public class MyCashDetailServiceImpl extends ServiceImpl<MyCashDetailMapper, MyC
         list = detailIPage.getRecords().stream().map(myCashDetail -> {
             DetailDTO detailDTO = new DetailDTO();
             detailDTO.setBankName(myCashDetail.getBankName());
-            detailDTO.setAmount(CommonConstant.DECIMAL_FORMAT.format(myCashDetail.getChangeAmount()));
+            detailDTO.setAmount(CommonConstant.DECIMAL_FORMAT.format(myCashDetail.getNewAmount()));
+            detailDTO.setReason(myCashDetail.getReason());
             detailDTO.setCreateTime(myCashDetail.getCreateTime());
             return detailDTO;
         }).collect(Collectors.toList());

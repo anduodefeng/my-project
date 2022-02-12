@@ -38,8 +38,8 @@ public class MyCashDetail implements Serializable {
     /**
      * 变动金额
      */
-    @TableField("change_amount")
-    private BigDecimal changeAmount;
+    @TableField("new_amount")
+    private BigDecimal newAmount;
 
     /**
      * 原因

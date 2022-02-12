@@ -12,7 +12,6 @@ import com.maze.project.web.dto.fund.FundDetailDTO;
 import com.maze.project.web.dto.fund.FundDetailPageDTO;
 import com.maze.project.web.entity.MyFundDetail;
 import com.maze.project.web.mapper.MyFundDetailMapper;
-import com.maze.project.web.mapper.MyFundMapper;
 import com.maze.project.web.service.MyFundDetailService;
 import com.maze.project.web.vo.fund.FundChangeVO;
 import com.maze.project.web.vo.fund.FundDetailPageVO;
@@ -34,23 +33,17 @@ import java.util.stream.Collectors;
 @Service
 public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyFundDetail> implements MyFundDetailService {
 
-    private final MyFundMapper fundMapper;
-
-    public MyFundDetailServiceImpl(MyFundMapper fundMapper) {
-        this.fundMapper = fundMapper;
-    }
-
     @Override
     public boolean change(FundChangeVO fundChangeVO) {
         BigDecimal newAssets = new BigDecimal(fundChangeVO.getNewMoney());
         BigDecimal profit = new BigDecimal(fundChangeVO.getProfit());
+        BigDecimal principal = newAssets.subtract(profit);
         MyFundDetail myFundDetail = new MyFundDetail();
         myFundDetail.setFundCode(fundChangeVO.getCode());
         myFundDetail.setFundName(fundChangeVO.getName());
         myFundDetail.setNewMoney(newAssets);
         myFundDetail.setProfit(profit);
         myFundDetail.setProfitRate(new BigDecimal(fundChangeVO.getProfitRate()));
-        BigDecimal principal = newAssets.multiply(profit);
         myFundDetail.setPrincipal(principal);
         myFundDetail.setCreateTime(DateUtil.parseLocalDateTime(fundChangeVO.getCreateTime(), "yyyy-MM-dd"));
 
@@ -65,23 +58,19 @@ public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyF
         List<MyFundDetail> fundDetailList = list(Wrappers.<MyFundDetail>lambdaQuery()
                 .eq(MyFundDetail::getFundCode, fundCode)
                 .orderByAsc(MyFundDetail::getCreateTime));
-        BigDecimal lastProfit = BigDecimal.ZERO;
         for (MyFundDetail fundDetail : fundDetailList){
-            BigDecimal diff = fundDetail.getProfit().multiply(lastProfit);
             List<Double> changeList = new ArrayList<>();
             String date = DateUtil.format(fundDetail.getCreateTime(), "yyyy-MM-dd");
             changeList.add(0d);
-            changeList.add(diff.doubleValue());
+            changeList.add(fundDetail.getProfit().doubleValue());
             changeList.add(0d);
-            changeList.add(diff.doubleValue());
+            changeList.add(fundDetail.getProfit().doubleValue());
             dateList.add(date);
             dataList.add(changeList);
 
             //收益率
             double rate = fundDetail.getProfitRate().doubleValue();
             rateList.add(rate);
-
-            lastProfit = fundDetail.getProfit();
         }
 
         FundDetailChartDTO fundDetailChartDTO = new FundDetailChartDTO();

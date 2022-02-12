@@ -99,7 +99,7 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
     public boolean updateFund(FundChangeVO fundChangeVO) {
         BigDecimal newAssets = new BigDecimal(fundChangeVO.getNewMoney());
         BigDecimal profit = new BigDecimal(fundChangeVO.getProfit());
-        BigDecimal principal = newAssets.multiply(profit);
+        BigDecimal principal = newAssets.subtract(profit);
         MyFund myFund = getOne(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getFundCode, fundChangeVO.getCode()));
         if (null != myFund){
             myFund.setFundMoney(newAssets);
@@ -127,8 +127,10 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
         List<String> dateList = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(fundList)){
             List<String> fundCodes = fundList.stream().map(MyFund::getFundCode).collect(Collectors.toList());
-            List<MyFundDetail> myFundDetails = fundDetailMapper.selectList(Wrappers.<MyFundDetail>lambdaQuery().select(MyFundDetail::getCreateTime).in(MyFundDetail::getFundCode, fundCodes)
-                    .groupBy(MyFundDetail::getCreateTime));
+            List<MyFundDetail> myFundDetails = fundDetailMapper.selectList(Wrappers.<MyFundDetail>lambdaQuery().select(MyFundDetail::getCreateTime)
+                    .in(MyFundDetail::getFundCode, fundCodes)
+                    .groupBy(MyFundDetail::getCreateTime)
+                    .orderByAsc(MyFundDetail::getCreateTime));
             dateList = myFundDetails.stream().map(myFundDetail -> DateUtil.format(myFundDetail.getCreateTime(),"yyyy-MM-dd"))
                     .collect(Collectors.toList());
         }

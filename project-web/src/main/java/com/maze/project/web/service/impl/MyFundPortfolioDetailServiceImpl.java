@@ -48,15 +48,13 @@ public class MyFundPortfolioDetailServiceImpl extends ServiceImpl<MyFundPortfoli
                 .eq(MyFundPortfolioDetail::getFundPortfolioId, portfolioId)
                 .ge(MyFundPortfolioDetail::getCreateTime, CommonConstant.beginTime)
                 .orderByAsc(MyFundPortfolioDetail::getCreateTime));
-        BigDecimal lastProfit = BigDecimal.ZERO;
         for (MyFundPortfolioDetail portfolioDetail : portfolioDetailList){
             List<Double> changeList = new ArrayList<>();
-            BigDecimal diff = portfolioDetail.getProfit().multiply(lastProfit);
             String date = DateUtil.format(portfolioDetail.getCreateTime(), "yyyy-MM-dd");
             changeList.add(0d);
-            changeList.add(diff.doubleValue());
+            changeList.add(portfolioDetail.getProfit().doubleValue());
             changeList.add(0d);
-            changeList.add(diff.doubleValue());
+            changeList.add(portfolioDetail.getProfit().doubleValue());
 
             dateList.add(date);
             dataList.add(changeList);
@@ -65,7 +63,6 @@ public class MyFundPortfolioDetailServiceImpl extends ServiceImpl<MyFundPortfoli
             double rate = portfolioDetail.getProfitRate().doubleValue();
             rateList.add(rate);
 
-            lastProfit = portfolioDetail.getProfit();
 
         }
         PortfolioDetailChartDTO portfolioDetailChartDTO = new PortfolioDetailChartDTO();
@@ -80,7 +77,7 @@ public class MyFundPortfolioDetailServiceImpl extends ServiceImpl<MyFundPortfoli
     public boolean change(PortfolioChangeVO portfolioChangeVO, Integer id) {
         BigDecimal newAssets = new BigDecimal(portfolioChangeVO.getNewMoney());
         BigDecimal profit = new BigDecimal(portfolioChangeVO.getProfit());
-        BigDecimal principal = newAssets.multiply(profit);
+        BigDecimal principal = newAssets.subtract(profit);
 
         MyFundPortfolioDetail portfolioDetail = new MyFundPortfolioDetail();
         portfolioDetail.setFundPortfolioId(id);

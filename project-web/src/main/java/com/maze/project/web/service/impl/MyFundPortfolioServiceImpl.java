@@ -2,6 +2,7 @@ package com.maze.project.web.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -21,6 +22,7 @@ import com.maze.project.web.vo.portfolio.PortfolioPageVO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -84,6 +86,7 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
             portfolioDTO.setPrincipal(CommonConstant.DECIMAL_FORMAT.format(fundPortfolio.getPrincipal()));
             portfolioDTO.setProfit(CommonConstant.DECIMAL_FORMAT.format(fundPortfolio.getProfit()));
             portfolioDTO.setProfitRate(CommonConstant.DECIMAL_FORMAT.format(fundPortfolio.getProfitRate()));
+            portfolioDTO.setType(String.valueOf(fundPortfolio.getType()));
             portfolioDTO.setUpdateTime(fundPortfolio.getUpdateTime());
             portfolioDTO.setCreateTime(fundPortfolio.getCreateTime());
             list.add(portfolioDTO);
@@ -99,13 +102,19 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
     public Integer updatePortfolio(PortfolioChangeVO portfolioChangeVO) {
         BigDecimal newAssets = new BigDecimal(portfolioChangeVO.getNewMoney());
         BigDecimal profit = new BigDecimal(portfolioChangeVO.getProfit());
-        BigDecimal principal = newAssets.multiply(profit);
+        BigDecimal principal = newAssets.subtract(profit);
+        BigDecimal profitRate = BigDecimal.ZERO;
+        if(StrUtil.isEmpty(portfolioChangeVO.getProfitRate()) || "0".equals(portfolioChangeVO.getProfitRate())){
+            profitRate = profit.divide(principal, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+        }else {
+            profitRate = new BigDecimal(portfolioChangeVO.getProfitRate());
+        }
         MyFundPortfolio portfolio = getById(portfolioChangeVO.getPortfolioId());
         if (null != portfolio){
             portfolio.setMoney(newAssets);
             portfolio.setProfit(profit);
-            portfolio.setProfitRate(new BigDecimal(portfolioChangeVO.getProfitRate()));
             portfolio.setPrincipal(principal);
+            portfolio.setProfitRate(profitRate);
         }else {
             portfolio = new MyFundPortfolio();
             portfolio.setName(portfolioChangeVO.getName());
@@ -114,7 +123,7 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
             portfolio.setAccountId(Integer.parseInt(portfolioChangeVO.getAccountId()));
             portfolio.setAccountName(portfolioChangeVO.getAccountName());
             portfolio.setProfit(profit);
-            portfolio.setProfitRate(new BigDecimal(portfolioChangeVO.getProfitRate()));
+            portfolio.setProfitRate(profitRate);
             portfolio.setCreateTime(DateUtil.parseLocalDateTime(portfolioChangeVO.getCreateTime(), "yyyy-MM-dd"));
         }
         portfolio.setType(Integer.parseInt(portfolioChangeVO.getType()));
@@ -131,7 +140,7 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
             List<Integer> portfolios = portfolioList.stream().map(MyFundPortfolio::getId).collect(Collectors.toList());
             List<MyFundPortfolioDetail> myPortfolioDetails = portfolioDetailMapper.selectList(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
                     .select(MyFundPortfolioDetail::getCreateTime).in(MyFundPortfolioDetail::getFundPortfolioId, portfolios)
-                    .groupBy(MyFundPortfolioDetail::getCreateTime));
+                    .groupBy(MyFundPortfolioDetail::getCreateTime).orderByAsc(MyFundPortfolioDetail::getCreateTime));
             dateList = myPortfolioDetails.stream().map(portfolioDetail -> DateUtil.format(portfolioDetail.getCreateTime(),"yyyy-MM-dd"))
                     .collect(Collectors.toList());
         }

@@ -1,13 +1,11 @@
 package com.maze.project.web.service;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.maze.project.web.common.constant.CommonConstant;
 import com.maze.project.web.common.enums.FundEnum;
 import com.maze.project.web.common.enums.PortfolioEnum;
 import com.maze.project.web.dto.common.ManyLineDTO;
@@ -44,6 +42,7 @@ public class DashboardService {
 
     public IndexDTO index(){
         IndexDTO indexDTO = new IndexDTO();
+        //总金额、总盈利
         Map<String, Double> assetsInfo = getAssetsInfo();
         Map<String, Object> everyTotal = getEveryDayAssets();
         List<String> dateList = (List<String>) everyTotal.get("date");
@@ -53,7 +52,6 @@ public class DashboardService {
 
         indexDTO.setTotalAssets(assetsInfo.get("totalMoney"));
         indexDTO.setTotalProfit(assetsInfo.get("totalProfit"));
-        indexDTO.setYesterdayProfit(yesterdayProfit());
         indexDTO.setPieList(buildPie());
         indexDTO.setDateList(dateList);
         indexDTO.setMoneyList(moneyList);
@@ -116,26 +114,6 @@ public class DashboardService {
     }
 
     /**
-     * 昨日盈亏
-     * @return double
-     */
-    private double yesterdayProfit(){
-        DateTime yesterday = DateUtil.yesterday();
-        List<MyFundDetail> fundDetail = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
-//                .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
-                .eq(MyFundDetail::getCreateTime, yesterday.toString("yyyy-MM-dd")));
-        BigDecimal fundDetailProfit = CollUtil.isEmpty(fundDetail) ? BigDecimal.ZERO : BigDecimal.ZERO;
-//                fundDetail.stream().map(MyFundDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        List<MyFundPortfolioDetail> portfolioDetail = portfolioDetailService.list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
-//                .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
-                .eq(MyFundPortfolioDetail::getCreateTime, yesterday.toString("yyyy-MM-dd")));
-        BigDecimal portfolioProfit = CollUtil.isEmpty(portfolioDetail) ? BigDecimal.ZERO : BigDecimal.ZERO;
-//                portfolioDetail.stream().map(MyFundPortfolioDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        return fundDetailProfit.add(portfolioProfit).doubleValue();
-    }
-    /**
      * @description: 饼图
      * @param:
      * @return: java.util.List<com.maze.project.web.dto.common.PieDTO>
@@ -194,79 +172,46 @@ public class DashboardService {
      */
     private Map<String, Object> getEveryDayAssets(){
         Map<String, Object> map = new HashMap<>();
-        List<String> dateList = new ArrayList<>();
         List<Double> assetList = new ArrayList<>();
         List<Double> principalList = new ArrayList<>();
         List<List<Double>> profitEveryday = new ArrayList<>();
-        DateTime end = DateUtil.yesterday().setField(DateField.HOUR_OF_DAY, 0).setField(DateField.MINUTE,0).setField(DateField.SECOND, 0);
-        DateTime start = DateUtil.offsetDay(end, -90);
-        DateTime myTime = DateUtil.parse(CommonConstant.beginTime, "yyyy-MM-dd");
-        if (start.isBefore(myTime)){
-            start = myTime;
-        }
 
-        BigDecimal lastMonetaryFund = BigDecimal.ZERO;
-        BigDecimal lastMonetaryFundPrincipal = BigDecimal.ZERO;
-        BigDecimal lastOtherFund = BigDecimal.ZERO;
-        BigDecimal lastOtherFundPrincipal = BigDecimal.ZERO;
-        BigDecimal lastPortfolio = BigDecimal.ZERO;
-        BigDecimal lastPrincipal = BigDecimal.ZERO;
-        while (start.isBefore(end)){
-            dateList.add(start.toString("yyyy-MM-dd"));
-            List<MyFundDetail> monetaryFundDetail = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
-//                    .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
-                    .eq(MyFundDetail::getFundCode, "TTXJGS01200001")
-                    .eq(MyFundDetail::getCreateTime, start));
-            BigDecimal totalMonetaryFund;
-            BigDecimal totalMonetaryFundPrincipal;
-            if (CollectionUtil.isNotEmpty(monetaryFundDetail)){
-                totalMonetaryFund = monetaryFundDetail.stream().map(MyFundDetail::getNewMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-                totalMonetaryFundPrincipal = monetaryFundDetail.stream().map(MyFundDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
-            }else {
-                totalMonetaryFund = lastMonetaryFund;
-                totalMonetaryFundPrincipal = lastMonetaryFundPrincipal;
-            }
-//            BigDecimal monetaryFundProfit = monetaryFundDetail.stream().map(MyFundDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+        List<MyFundDetail> fundDetailList = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery().select(MyFundDetail::getCreateTime)
+                .groupBy(MyFundDetail::getCreateTime).orderByAsc(MyFundDetail::getCreateTime));
+        List<String> dateList = fundDetailList.stream().map(fundDetail -> DateUtil.format(fundDetail.getCreateTime(), "yyyy-MM-dd")).collect(Collectors.toList());
 
-            List<MyFundDetail> otherFundDetail = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
-//                    .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
-                    .ne(MyFundDetail::getFundCode, "TTXJGS01200001")
-                    .eq(MyFundDetail::getCreateTime, start));
-            BigDecimal totalOtherFund;
-            BigDecimal totalOtherFundPrincipal;
-            if (CollectionUtil.isNotEmpty(otherFundDetail)){
-                totalOtherFund = otherFundDetail.stream().map(MyFundDetail::getNewMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
-                totalOtherFundPrincipal = otherFundDetail.stream().map(MyFundDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
-            }else {
-                totalOtherFund = lastOtherFund;
-                totalOtherFundPrincipal = lastOtherFundPrincipal;
+        for (String date : dateList){
+            List<MyFundDetail> fundAssets = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
+                    .eq(MyFundDetail::getCreateTime, date));
+            BigDecimal totalFundAssets = BigDecimal.ZERO;
+            BigDecimal totalFundPrincipal = BigDecimal.ZERO;
+            BigDecimal totalFundProfit = BigDecimal.ZERO;
+            if (CollectionUtil.isNotEmpty(fundAssets)) {
+                totalFundAssets = fundAssets.stream().map(MyFundDetail::getNewMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
+                totalFundPrincipal = fundAssets.stream().map(MyFundDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
+                totalFundProfit = fundAssets.stream().map(MyFundDetail::getProfit).reduce(BigDecimal.ZERO, BigDecimal::add);
             }
-//            BigDecimal otherFundProfit = otherFundDetail.stream().map(MyFundDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
 
             List<MyFundPortfolioDetail> portfolioDetails = portfolioDetailService.list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
-//                    .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
-                    .eq(MyFundPortfolioDetail::getCreateTime, start));
-            BigDecimal totalPortfolio;
-            BigDecimal totalPrincipal;
-            if (CollectionUtil.isNotEmpty(portfolioDetails)){
-                totalPortfolio = portfolioDetails.stream().map(MyFundPortfolioDetail::getNewAssets).reduce(BigDecimal.ZERO, BigDecimal::add);
-                totalPrincipal = portfolioDetails.stream().map(MyFundPortfolioDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
-            }else {
-                totalPortfolio = lastPortfolio;
-                totalPrincipal = lastPrincipal;
+                    .eq(MyFundPortfolioDetail::getCreateTime, date));
+            BigDecimal totalPortfolioAssets = BigDecimal.ZERO;
+            BigDecimal totalPortfolioPrincipal = BigDecimal.ZERO;
+            BigDecimal totalPortfolioProfit = BigDecimal.ZERO;
+            if (CollectionUtil.isNotEmpty(portfolioDetails)) {
+                totalPortfolioAssets = portfolioDetails.stream().map(MyFundPortfolioDetail::getNewAssets).reduce(BigDecimal.ZERO, BigDecimal::add);
+                totalPortfolioPrincipal = portfolioDetails.stream().map(MyFundPortfolioDetail::getPrincipal).reduce(BigDecimal.ZERO, BigDecimal::add);
+                totalPortfolioProfit = portfolioDetails.stream().map(MyFundPortfolioDetail::getProfit).reduce(BigDecimal.ZERO, BigDecimal::add);
             }
-//            BigDecimal portfolioProfit = portfolioDetails.stream().map(MyFundPortfolioDetail::getChangeMoney).reduce(BigDecimal.ZERO, BigDecimal::add);
 
             List<MyCash> cashList = cashService.list();
             BigDecimal cashMoney = cashList.stream().map(MyCash::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            BigDecimal total = totalMonetaryFund.add(totalOtherFund).add(totalPortfolio).add(cashMoney);
-            BigDecimal principal = totalPrincipal.add(totalMonetaryFundPrincipal).add(totalOtherFundPrincipal).add(cashMoney);
-//            BigDecimal totalProfit = monetaryFundProfit.add(otherFundProfit).add(portfolioProfit);
-            BigDecimal totalProfit = BigDecimal.ZERO;
+            BigDecimal total = totalFundAssets.add(totalPortfolioAssets).add(cashMoney);
+            BigDecimal principal = totalFundPrincipal.add(totalPortfolioPrincipal).add(cashMoney);
             assetList.add(total.doubleValue());
             principalList.add(principal.doubleValue());
 
+            BigDecimal totalProfit = totalFundProfit.add(totalPortfolioProfit);
             List<Double> changeList = new ArrayList<>();
             changeList.add(0d);
             changeList.add(totalProfit.doubleValue());
@@ -274,15 +219,6 @@ public class DashboardService {
             changeList.add(totalProfit.doubleValue());
 
             profitEveryday.add(changeList);
-
-            lastMonetaryFund = totalMonetaryFund;
-            lastMonetaryFundPrincipal = totalMonetaryFundPrincipal;
-            lastOtherFund = totalOtherFund;
-            lastOtherFundPrincipal = totalOtherFundPrincipal;
-            lastPortfolio = totalPortfolio;
-            lastPrincipal = totalPrincipal;
-
-            start = DateUtil.offsetDay(start, 1);
         }
         map.put("date", dateList);
         map.put("everyAssets", assetList);
@@ -309,7 +245,6 @@ public class DashboardService {
             manyLineDTO.setName(fund.getFundName());
             List<MyFundDetail> fundDetailList = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
                     .eq(MyFundDetail::getFundCode, fund.getFundCode())
-//                    .eq(MyFundDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
                     .between(MyFundDetail::getCreateTime, start, end).orderByAsc(MyFundDetail::getCreateTime));
             List<Double> list = fundDetailList.stream().map(myFundDetail -> myFundDetail.getProfitRate().multiply(BigDecimal.valueOf(100)).doubleValue())
                     .collect(Collectors.toList());
@@ -341,7 +276,6 @@ public class DashboardService {
             manyLineDTO.setName(portfolio.getName());
             List<MyFundPortfolioDetail> portfolioDetailList = portfolioDetailService.list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
                     .eq(MyFundPortfolioDetail::getFundPortfolioId, portfolio.getId())
-//                    .eq(MyFundPortfolioDetail::getType, FundEnum.FundChangeEnum.AMOUNT_UPDATE.getCode())
                     .between(MyFundPortfolioDetail::getCreateTime, start, end).orderByAsc(MyFundPortfolioDetail::getCreateTime));
             List<Double> list = portfolioDetailList.stream().map(portfolioDetail -> portfolioDetail.getProfitRate().multiply(BigDecimal.valueOf(100)).doubleValue())
                     .collect(Collectors.toList());

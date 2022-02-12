@@ -86,8 +86,7 @@ public class MyCashServiceImpl extends ServiceImpl<MyCashMapper, MyCash> impleme
         MyCash myCash = getOne(Wrappers.<MyCash>lambdaQuery().eq(MyCash::getBankName, bankName));
         if (null != myCash){
             BigDecimal change = new BigDecimal(changeMoney);
-            BigDecimal result = myCash.getAmount().add(change);
-            myCash.setAmount(result);
+            myCash.setAmount(change);
             myCash.setUpdateTime(LocalDateTime.now());
         }else {
             myCash = new MyCash();

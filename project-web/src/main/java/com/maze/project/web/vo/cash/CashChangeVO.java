@@ -11,6 +11,6 @@ public class CashChangeVO {
     private String bankName;
     @NotBlank(message = "变动金额不能为空")
     private String changeMoney;
-    @NotBlank(message = "原因不能为空")
+
     private String reason;
 }
