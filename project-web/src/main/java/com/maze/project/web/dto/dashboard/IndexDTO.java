@@ -13,7 +13,7 @@ public class IndexDTO {
 
     private double totalProfit;
 
-    private double yesterdayProfit;
+    private double totalProfitRate;
     //饼图用数据
     List<PieDTO> pieList;
 

@@ -15,6 +15,7 @@ import com.maze.project.web.entity.*;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,11 +53,18 @@ public class DashboardService {
 
         indexDTO.setTotalAssets(assetsInfo.get("totalMoney"));
         indexDTO.setTotalProfit(assetsInfo.get("totalProfit"));
+
+        BigDecimal totalPrincipal = BigDecimal.valueOf(indexDTO.getTotalAssets()).subtract(BigDecimal.valueOf(indexDTO.getTotalProfit()));
+        BigDecimal totalProfitRate = BigDecimal.valueOf(indexDTO.getTotalProfit()).divide(totalPrincipal, 4, RoundingMode.HALF_UP);
+        totalProfitRate = totalProfitRate.multiply(BigDecimal.valueOf(100));
+        indexDTO.setTotalProfitRate(totalProfitRate.doubleValue());
+
         indexDTO.setPieList(buildPie());
         indexDTO.setDateList(dateList);
         indexDTO.setMoneyList(moneyList);
         indexDTO.setPrincipalList(principalList);
         indexDTO.setProfitEveryday(profitEveryday);
+
 
         Map<String, Object> indexFundLine = getFundLine(FundEnum.FundTypeEnum.INDEX_FUND.getCode(), dateList);
         indexDTO.setIndexFundNameList((List<String>) indexFundLine.get("fundName"));
