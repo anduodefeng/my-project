@@ -245,7 +245,7 @@ public class DashboardService {
     private Map<String, Object> getFundLine(int fundType,List<String> dateList){
         List<ManyLineDTO> manyLineList = new ArrayList<>();
         List<String> indexNameList = new ArrayList<>();
-        List<MyFund> fundList = fundService.list(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getType, fundType));
+        List<MyFund> fundList = fundService.list(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getType, fundType).gt(MyFund::getFundMoney, 0));
         String start = dateList.get(0);
         String end = dateList.get(dateList.size()-1);
         for (MyFund fund : fundList){
@@ -254,7 +254,7 @@ public class DashboardService {
             List<MyFundDetail> fundDetailList = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
                     .eq(MyFundDetail::getFundCode, fund.getFundCode())
                     .between(MyFundDetail::getCreateTime, start, end).orderByAsc(MyFundDetail::getCreateTime));
-            List<Double> list = fundDetailList.stream().map(myFundDetail -> myFundDetail.getProfitRate().multiply(BigDecimal.valueOf(100)).doubleValue())
+            List<Double> list = fundDetailList.stream().map(myFundDetail -> myFundDetail.getProfitRate().doubleValue())
                     .collect(Collectors.toList());
             manyLineDTO.setData(list);
             indexNameList.add(fund.getFundName());
@@ -276,7 +276,7 @@ public class DashboardService {
     private Map<String, Object> getPortfolioLine(List<Integer> portfolioTypeList,List<String> dateList){
         List<ManyLineDTO> manyLineList = new ArrayList<>();
         List<String> portfolioNameList = new ArrayList<>();
-        List<MyFundPortfolio> portfolioList = portfolioService.list(Wrappers.<MyFundPortfolio>lambdaQuery().in(MyFundPortfolio::getType, portfolioTypeList));
+        List<MyFundPortfolio> portfolioList = portfolioService.list(Wrappers.<MyFundPortfolio>lambdaQuery().in(MyFundPortfolio::getType, portfolioTypeList).gt(MyFundPortfolio::getMoney, 0));
         String start = dateList.get(0);
         String end = dateList.get(dateList.size()-1);
         for (MyFundPortfolio portfolio : portfolioList){
@@ -285,7 +285,7 @@ public class DashboardService {
             List<MyFundPortfolioDetail> portfolioDetailList = portfolioDetailService.list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
                     .eq(MyFundPortfolioDetail::getFundPortfolioId, portfolio.getId())
                     .between(MyFundPortfolioDetail::getCreateTime, start, end).orderByAsc(MyFundPortfolioDetail::getCreateTime));
-            List<Double> list = portfolioDetailList.stream().map(portfolioDetail -> portfolioDetail.getProfitRate().multiply(BigDecimal.valueOf(100)).doubleValue())
+            List<Double> list = portfolioDetailList.stream().map(portfolioDetail -> portfolioDetail.getProfitRate().doubleValue())
                     .collect(Collectors.toList());
             manyLineDTO.setData(list);
             portfolioNameList.add(portfolio.getName());

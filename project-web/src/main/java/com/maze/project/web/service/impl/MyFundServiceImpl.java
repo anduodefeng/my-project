@@ -51,7 +51,7 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
         Map<String,List<String>> map = getDate(fundList);
         List<String> dateList = map.get("date");
         for (MyFund fund : fundList){
-
+            if (fund.getFundMoney().doubleValue() == 0) continue;
             PieDTO pieDTO = new PieDTO();
             pieDTO.setName(fund.getFundName());
             pieDTO.setValue(fund.getFundMoney().doubleValue());

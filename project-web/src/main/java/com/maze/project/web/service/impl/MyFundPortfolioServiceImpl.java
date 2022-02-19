@@ -54,7 +54,7 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
         Map<String, List<String>> map = getDate(portfolioList);
         List<String> dateList = map.get("date");
         for (MyFundPortfolio portfolio : portfolioList){
-
+            if (portfolio.getMoney().doubleValue() == 0) continue;
             PieDTO pieDTO = new PieDTO();
             pieDTO.setName(portfolio.getName());
             pieDTO.setValue(portfolio.getMoney().doubleValue());
