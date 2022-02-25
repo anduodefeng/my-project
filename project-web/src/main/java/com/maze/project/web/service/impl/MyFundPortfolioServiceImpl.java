@@ -103,8 +103,8 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
         BigDecimal newAssets = new BigDecimal(portfolioChangeVO.getNewMoney());
         BigDecimal profit = new BigDecimal(portfolioChangeVO.getProfit());
         BigDecimal principal = newAssets.subtract(profit);
-        BigDecimal profitRate = BigDecimal.ZERO;
-        if(StrUtil.isEmpty(portfolioChangeVO.getProfitRate()) || "0".equals(portfolioChangeVO.getProfitRate())){
+        BigDecimal profitRate;
+        if(StrUtil.isEmpty(portfolioChangeVO.getProfitRate())){
             profitRate = profit.divide(principal, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
         }else {
             profitRate = new BigDecimal(portfolioChangeVO.getProfitRate());

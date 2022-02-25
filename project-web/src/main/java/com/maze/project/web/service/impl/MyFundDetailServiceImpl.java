@@ -3,6 +3,7 @@ package com.maze.project.web.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -18,6 +19,7 @@ import com.maze.project.web.vo.fund.FundDetailPageVO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,12 +40,18 @@ public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyF
         BigDecimal newAssets = new BigDecimal(fundChangeVO.getNewMoney());
         BigDecimal profit = new BigDecimal(fundChangeVO.getProfit());
         BigDecimal principal = newAssets.subtract(profit);
+        BigDecimal rate;
+        if (StringUtils.isBlank(fundChangeVO.getProfitRate())){
+            rate = profit.divide(principal,4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+        }else{
+            rate = new BigDecimal(fundChangeVO.getProfitRate());
+        }
         MyFundDetail myFundDetail = new MyFundDetail();
         myFundDetail.setFundCode(fundChangeVO.getCode());
         myFundDetail.setFundName(fundChangeVO.getName());
         myFundDetail.setNewMoney(newAssets);
         myFundDetail.setProfit(profit);
-        myFundDetail.setProfitRate(new BigDecimal(fundChangeVO.getProfitRate()));
+        myFundDetail.setProfitRate(rate);
         myFundDetail.setPrincipal(principal);
         myFundDetail.setCreateTime(DateUtil.parseLocalDateTime(fundChangeVO.getCreateTime(), "yyyy-MM-dd"));
 
