@@ -19,6 +19,5 @@ public class FundChangeVO {
     private String createTime;
     @NotBlank(message = "收益不能为空")
     private String profit;
-    @NotBlank(message = "收益率不能为空")
     private String profitRate;
 }

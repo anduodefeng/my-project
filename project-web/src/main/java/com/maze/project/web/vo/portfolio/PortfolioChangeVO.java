@@ -18,7 +18,6 @@ public class PortfolioChangeVO {
     private String accountName;
     @NotBlank(message = "收益不能为空")
     private String profit;
-    @NotBlank(message = "收益率不能为空")
     private String profitRate;
     /**
      * 组合类型 0-稳健 1-积极  2-定投

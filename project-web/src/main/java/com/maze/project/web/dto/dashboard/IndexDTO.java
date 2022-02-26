@@ -17,12 +17,14 @@ public class IndexDTO {
     //饼图用数据
     List<PieDTO> pieList;
 
-    //总资产每日折线图
+    //总资产每周折线图
     List<String> dateList;
     List<Double> moneyList;
     List<Double> principalList;
 
-    List<List<Double>> profitEveryday;
+    List<List<Double>> profitEveryWeek;
+
+    List<Double> profitRateEveryWeek;
 
     //指数基金收益率图
     private List<String> indexFundNameList;

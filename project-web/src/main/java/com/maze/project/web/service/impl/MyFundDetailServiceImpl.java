@@ -66,15 +66,19 @@ public class MyFundDetailServiceImpl extends ServiceImpl<MyFundDetailMapper, MyF
         List<MyFundDetail> fundDetailList = list(Wrappers.<MyFundDetail>lambdaQuery()
                 .eq(MyFundDetail::getFundCode, fundCode)
                 .orderByAsc(MyFundDetail::getCreateTime));
+        BigDecimal last = BigDecimal.ZERO;
         for (MyFundDetail fundDetail : fundDetailList){
             List<Double> changeList = new ArrayList<>();
             String date = DateUtil.format(fundDetail.getCreateTime(), "yyyy-MM-dd");
+            double weekProfit = fundDetail.getProfit().subtract(last).doubleValue();
             changeList.add(0d);
-            changeList.add(fundDetail.getProfit().doubleValue());
+            changeList.add(weekProfit);
             changeList.add(0d);
-            changeList.add(fundDetail.getProfit().doubleValue());
+            changeList.add(weekProfit);
             dateList.add(date);
             dataList.add(changeList);
+
+            last = fundDetail.getProfit();
 
             //收益率
             double rate = fundDetail.getProfitRate().doubleValue();

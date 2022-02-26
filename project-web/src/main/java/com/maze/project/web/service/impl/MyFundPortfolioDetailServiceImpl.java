@@ -50,16 +50,20 @@ public class MyFundPortfolioDetailServiceImpl extends ServiceImpl<MyFundPortfoli
                 .eq(MyFundPortfolioDetail::getFundPortfolioId, portfolioId)
                 .ge(MyFundPortfolioDetail::getCreateTime, CommonConstant.beginTime)
                 .orderByAsc(MyFundPortfolioDetail::getCreateTime));
+        BigDecimal last = BigDecimal.ZERO;
         for (MyFundPortfolioDetail portfolioDetail : portfolioDetailList){
             List<Double> changeList = new ArrayList<>();
             String date = DateUtil.format(portfolioDetail.getCreateTime(), "yyyy-MM-dd");
+            double weekProfit = portfolioDetail.getProfit().subtract(last).doubleValue();
             changeList.add(0d);
-            changeList.add(portfolioDetail.getProfit().doubleValue());
+            changeList.add(weekProfit);
             changeList.add(0d);
-            changeList.add(portfolioDetail.getProfit().doubleValue());
+            changeList.add(weekProfit);
 
             dateList.add(date);
             dataList.add(changeList);
+
+            last = portfolioDetail.getProfit();
 
             //收益率
             double rate = portfolioDetail.getProfitRate().doubleValue();

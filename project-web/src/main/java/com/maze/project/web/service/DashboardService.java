@@ -45,11 +45,12 @@ public class DashboardService {
         IndexDTO indexDTO = new IndexDTO();
         //总金额、总盈利
         Map<String, Double> assetsInfo = getAssetsInfo();
-        Map<String, Object> everyTotal = getEveryDayAssets();
+        Map<String, Object> everyTotal = getEveryWeekAssets();
         List<String> dateList = (List<String>) everyTotal.get("date");
         List<Double> moneyList = (List<Double>) everyTotal.get("everyAssets");
         List<Double> principalList = (List<Double>) everyTotal.get("principal");
-        List<List<Double>> profitEveryday = (List<List<Double>>) everyTotal.get("profitEveryday");
+        List<List<Double>> profitEveryWeek = (List<List<Double>>) everyTotal.get("profitEveryWeek");
+        List<Double> profitRateEveryWeek = (List<Double>) everyTotal.get("profitRateEveryWeek");
 
         indexDTO.setTotalAssets(assetsInfo.get("totalMoney"));
         indexDTO.setTotalProfit(assetsInfo.get("totalProfit"));
@@ -63,7 +64,8 @@ public class DashboardService {
         indexDTO.setDateList(dateList);
         indexDTO.setMoneyList(moneyList);
         indexDTO.setPrincipalList(principalList);
-        indexDTO.setProfitEveryday(profitEveryday);
+        indexDTO.setProfitEveryWeek(profitEveryWeek);
+        indexDTO.setProfitRateEveryWeek(profitRateEveryWeek);
 
 
         Map<String, Object> indexFundLine = getFundLine(FundEnum.FundTypeEnum.INDEX_FUND.getCode(), dateList);
@@ -175,19 +177,21 @@ public class DashboardService {
     }
 
     /**
-     * 每日资产变化
+     * 每周资产变化
      * @return map
      */
-    private Map<String, Object> getEveryDayAssets(){
+    private Map<String, Object> getEveryWeekAssets(){
         Map<String, Object> map = new HashMap<>();
         List<Double> assetList = new ArrayList<>();
         List<Double> principalList = new ArrayList<>();
-        List<List<Double>> profitEveryday = new ArrayList<>();
+        List<List<Double>> profitEveryWeek = new ArrayList<>();
+        List<Double> profitRateEveryWeek = new ArrayList<>();
 
         List<MyFundDetail> fundDetailList = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery().select(MyFundDetail::getCreateTime)
                 .groupBy(MyFundDetail::getCreateTime).orderByAsc(MyFundDetail::getCreateTime));
         List<String> dateList = fundDetailList.stream().map(fundDetail -> DateUtil.format(fundDetail.getCreateTime(), "yyyy-MM-dd")).collect(Collectors.toList());
 
+        BigDecimal last = BigDecimal.ZERO;
         for (String date : dateList){
             List<MyFundDetail> fundAssets = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
                     .eq(MyFundDetail::getCreateTime, date));
@@ -216,22 +220,30 @@ public class DashboardService {
 
             BigDecimal total = totalFundAssets.add(totalPortfolioAssets).add(cashMoney);
             BigDecimal principal = totalFundPrincipal.add(totalPortfolioPrincipal).add(cashMoney);
+            BigDecimal totalProfit = totalFundProfit.add(totalPortfolioProfit);
+
+            BigDecimal rate = totalProfit.divide(principal,4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+            profitRateEveryWeek.add(rate.doubleValue());
+
             assetList.add(total.doubleValue());
             principalList.add(principal.doubleValue());
-
-            BigDecimal totalProfit = totalFundProfit.add(totalPortfolioProfit);
+            //本周盈利
+            BigDecimal weekProfit = totalProfit.subtract(last);
             List<Double> changeList = new ArrayList<>();
             changeList.add(0d);
-            changeList.add(totalProfit.doubleValue());
+            changeList.add(weekProfit.doubleValue());
             changeList.add(0d);
-            changeList.add(totalProfit.doubleValue());
+            changeList.add(weekProfit.doubleValue());
 
-            profitEveryday.add(changeList);
+            profitEveryWeek.add(changeList);
+
+            last = totalProfit;
         }
         map.put("date", dateList);
         map.put("everyAssets", assetList);
         map.put("principal", principalList);
-        map.put("profitEveryday", profitEveryday);
+        map.put("profitEveryWeek", profitEveryWeek);
+        map.put("profitRateEveryWeek", profitRateEveryWeek);
 
         return map;
     }
