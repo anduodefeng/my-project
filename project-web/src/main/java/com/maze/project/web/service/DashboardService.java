@@ -105,13 +105,13 @@ public class DashboardService {
         BigDecimal fundMoney = BigDecimal.ZERO;
         BigDecimal fundProfit = BigDecimal.ZERO;
         for (MyFund fund : fundList){
-            fundMoney = fundMoney.add(fund.getFundMoney());
+            fundMoney = fundMoney.add(fund.getPrincipal());
             fundProfit = fundProfit.add(fund.getProfit());
         }
         BigDecimal portfolioMoney = BigDecimal.ZERO;
         BigDecimal portfolioProfit = BigDecimal.ZERO;
         for (MyFundPortfolio portfolio : portfolioList){
-            portfolioMoney = portfolioMoney.add(portfolio.getMoney());
+            portfolioMoney = portfolioMoney.add(portfolio.getPrincipal());
             portfolioProfit = portfolioProfit.add(portfolio.getProfit());
         }
         double totalMoney = cashMoney.add(fundMoney).add(portfolioMoney).doubleValue();
