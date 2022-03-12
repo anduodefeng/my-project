@@ -99,19 +99,19 @@ public class DashboardService {
     private Map<String, Double> getAssetsInfo(){
         Map<String, Double> map = new HashMap<>();
         List<MyCash> cashList = cashService.list();
-        List<MyFund> fundList = fundService.list();
-        List<MyFundPortfolio> portfolioList = portfolioService.list();
+        List<MyFund> fundList = fundService.list(Wrappers.<MyFund>lambdaQuery().gt(MyFund::getFundMoney, 0));
+        List<MyFundPortfolio> portfolioList = portfolioService.list(Wrappers.<MyFundPortfolio>lambdaQuery().gt(MyFundPortfolio::getMoney, 0));
         BigDecimal cashMoney = cashList.stream().map(MyCash::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal fundMoney = BigDecimal.ZERO;
         BigDecimal fundProfit = BigDecimal.ZERO;
         for (MyFund fund : fundList){
-            fundMoney = fundMoney.add(fund.getPrincipal());
+            fundMoney = fundMoney.add(fund.getFundMoney());
             fundProfit = fundProfit.add(fund.getProfit());
         }
         BigDecimal portfolioMoney = BigDecimal.ZERO;
         BigDecimal portfolioProfit = BigDecimal.ZERO;
         for (MyFundPortfolio portfolio : portfolioList){
-            portfolioMoney = portfolioMoney.add(portfolio.getPrincipal());
+            portfolioMoney = portfolioMoney.add(portfolio.getMoney());
             portfolioProfit = portfolioProfit.add(portfolio.getProfit());
         }
         double totalMoney = cashMoney.add(fundMoney).add(portfolioMoney).doubleValue();
@@ -194,7 +194,7 @@ public class DashboardService {
         BigDecimal last = BigDecimal.ZERO;
         for (String date : dateList){
             List<MyFundDetail> fundAssets = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
-                    .eq(MyFundDetail::getCreateTime, date));
+                    .eq(MyFundDetail::getCreateTime, date).gt(MyFundDetail::getNewMoney, 0));
             BigDecimal totalFundAssets = BigDecimal.ZERO;
             BigDecimal totalFundPrincipal = BigDecimal.ZERO;
             BigDecimal totalFundProfit = BigDecimal.ZERO;
@@ -205,7 +205,7 @@ public class DashboardService {
             }
 
             List<MyFundPortfolioDetail> portfolioDetails = portfolioDetailService.list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
-                    .eq(MyFundPortfolioDetail::getCreateTime, date));
+                    .eq(MyFundPortfolioDetail::getCreateTime, date).gt(MyFundPortfolioDetail::getNewAssets, 0));
             BigDecimal totalPortfolioAssets = BigDecimal.ZERO;
             BigDecimal totalPortfolioPrincipal = BigDecimal.ZERO;
             BigDecimal totalPortfolioProfit = BigDecimal.ZERO;
