@@ -1,5 +1,6 @@
 package com.maze.project.web.service;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DatePattern;
@@ -258,16 +259,17 @@ public class DashboardService {
         List<ManyLineDTO> manyLineList = new ArrayList<>();
         List<String> indexNameList = new ArrayList<>();
         List<MyFund> fundList = fundService.list(Wrappers.<MyFund>lambdaQuery().eq(MyFund::getType, fundType).gt(MyFund::getFundMoney, 0));
-        String start = dateList.get(0);
-        String end = dateList.get(dateList.size()-1);
         for (MyFund fund : fundList){
             ManyLineDTO manyLineDTO = new ManyLineDTO();
             manyLineDTO.setName(fund.getFundName());
-            List<MyFundDetail> fundDetailList = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
-                    .eq(MyFundDetail::getFundCode, fund.getFundCode())
-                    .between(MyFundDetail::getCreateTime, start, end).orderByAsc(MyFundDetail::getCreateTime));
-            List<Double> list = fundDetailList.stream().map(myFundDetail -> myFundDetail.getProfitRate().doubleValue())
-                    .collect(Collectors.toList());
+            List<Double> list = new ArrayList<>();
+            for(String date : dateList){
+                List<MyFundDetail> fundDetailList = fundDetailService.list(Wrappers.<MyFundDetail>lambdaQuery()
+                        .eq(MyFundDetail::getFundCode, fund.getFundCode())
+                        .eq(MyFundDetail::getCreateTime, date).orderByAsc(MyFundDetail::getCreateTime).last("limit 1"));
+                double rate = CollUtil.isEmpty(fundDetailList) ? 0 : fundDetailList.get(0).getProfitRate().doubleValue();
+                list.add(rate);
+            }
             manyLineDTO.setData(list);
             indexNameList.add(fund.getFundName());
             manyLineList.add(manyLineDTO);
@@ -294,11 +296,14 @@ public class DashboardService {
         for (MyFundPortfolio portfolio : portfolioList){
             ManyLineDTO manyLineDTO = new ManyLineDTO();
             manyLineDTO.setName(portfolio.getName());
-            List<MyFundPortfolioDetail> portfolioDetailList = portfolioDetailService.list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
-                    .eq(MyFundPortfolioDetail::getFundPortfolioId, portfolio.getId())
-                    .between(MyFundPortfolioDetail::getCreateTime, start, end).orderByAsc(MyFundPortfolioDetail::getCreateTime));
-            List<Double> list = portfolioDetailList.stream().map(portfolioDetail -> portfolioDetail.getProfitRate().doubleValue())
-                    .collect(Collectors.toList());
+            List<Double> list = new ArrayList<>();
+            for (String date : dateList){
+                List<MyFundPortfolioDetail> portfolioDetailList = portfolioDetailService.list(Wrappers.<MyFundPortfolioDetail>lambdaQuery()
+                        .eq(MyFundPortfolioDetail::getFundPortfolioId, portfolio.getId())
+                        .eq(MyFundPortfolioDetail::getCreateTime, date).orderByAsc(MyFundPortfolioDetail::getCreateTime).last("limit 1"));
+                double rate = CollUtil.isEmpty(portfolioDetailList) ? 0 : portfolioDetailList.get(0).getProfitRate().doubleValue();
+                list.add(rate);
+            }
             manyLineDTO.setData(list);
             portfolioNameList.add(portfolio.getName());
             manyLineList.add(manyLineDTO);
