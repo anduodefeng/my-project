@@ -77,6 +77,7 @@ public class MyFundPortfolioServiceImpl extends ServiceImpl<MyFundPortfolioMappe
         Page<MyFundPortfolio> page = new Page<>(portfolioPageVO.getPage(), portfolioPageVO.getPageSize());
         IPage<MyFundPortfolio> iPage = page(page, Wrappers.<MyFundPortfolio>lambdaQuery()
                 .eq(MyFundPortfolio::getAccountId, portfolioPageVO.getAccountId())
+                .gt(MyFundPortfolio::getMoney, 0)
                 .orderByDesc(MyFundPortfolio::getProfitRate));
         for (MyFundPortfolio fundPortfolio : iPage.getRecords()){
             PortfolioDTO portfolioDTO = new PortfolioDTO();

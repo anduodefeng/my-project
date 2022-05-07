@@ -74,7 +74,7 @@ public class MyFundServiceImpl extends ServiceImpl<MyFundMapper, MyFund> impleme
     public FundPageDTO getFundPage(FundPageVO fundPageVO) {
         List<FundDTO> fundDTOS = new ArrayList<>();
         Page<MyFund> page = new Page<>(fundPageVO.getPage(), fundPageVO.getPageSize());
-        IPage<MyFund> fundIPage = page(page, Wrappers.<MyFund>lambdaQuery().eq(MyFund::getType, fundPageVO.getType()).orderByDesc(MyFund::getFundMoney));
+        IPage<MyFund> fundIPage = page(page, Wrappers.<MyFund>lambdaQuery().eq(MyFund::getType, fundPageVO.getType()).gt(MyFund::getFundMoney, 0).orderByDesc(MyFund::getFundMoney));
         if (CollectionUtil.isNotEmpty(fundIPage.getRecords())){
             fundDTOS = fundIPage.getRecords().stream().map(myFund -> {
                 FundDTO fundDTO = new FundDTO();
