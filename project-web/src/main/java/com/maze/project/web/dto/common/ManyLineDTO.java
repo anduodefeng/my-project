@@ -15,5 +15,7 @@ public class ManyLineDTO {
     private Map<String, String> emphasis = new HashMap<>(){{
         put("focus", "self");
     }};
-
+    private Map<String, Integer> lineStyle = new HashMap<>(){{
+        put("width", 2);
+    }};
 }
