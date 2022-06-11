@@ -216,11 +216,11 @@ public class DashboardService {
                 totalPortfolioProfit = portfolioDetails.stream().map(MyFundPortfolioDetail::getProfit).reduce(BigDecimal.ZERO, BigDecimal::add);
             }
 
-            List<MyCash> cashList = cashService.list();
-            BigDecimal cashMoney = cashList.stream().map(MyCash::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+//            List<MyCash> cashList = cashService.list();
+//            BigDecimal cashMoney = cashList.stream().map(MyCash::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            BigDecimal total = totalFundAssets.add(totalPortfolioAssets).add(cashMoney);
-            BigDecimal principal = totalFundPrincipal.add(totalPortfolioPrincipal).add(cashMoney);
+            BigDecimal total = totalFundAssets.add(totalPortfolioAssets);
+            BigDecimal principal = totalFundPrincipal.add(totalPortfolioPrincipal);
             BigDecimal totalProfit = totalFundProfit.add(totalPortfolioProfit);
 
             BigDecimal rate = totalProfit.divide(principal,4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
