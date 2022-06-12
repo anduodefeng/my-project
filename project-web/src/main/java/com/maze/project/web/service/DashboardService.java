@@ -102,7 +102,6 @@ public class DashboardService {
         List<MyCash> cashList = cashService.list();
         List<MyFund> fundList = fundService.list(Wrappers.<MyFund>lambdaQuery().gt(MyFund::getFundMoney, 0));
         List<MyFundPortfolio> portfolioList = portfolioService.list(Wrappers.<MyFundPortfolio>lambdaQuery().gt(MyFundPortfolio::getMoney, 0));
-        BigDecimal cashMoney = cashList.stream().map(MyCash::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal fundMoney = BigDecimal.ZERO;
         BigDecimal fundProfit = BigDecimal.ZERO;
         for (MyFund fund : fundList){
@@ -115,7 +114,7 @@ public class DashboardService {
             portfolioMoney = portfolioMoney.add(portfolio.getMoney());
             portfolioProfit = portfolioProfit.add(portfolio.getProfit());
         }
-        double totalMoney = cashMoney.add(fundMoney).add(portfolioMoney).doubleValue();
+        double totalMoney = fundMoney.add(portfolioMoney).doubleValue();
         double totalProfit = fundProfit.add(portfolioProfit).doubleValue();
 
         map.put("totalMoney", totalMoney);
