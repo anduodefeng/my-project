@@ -114,9 +114,10 @@ public class DashboardService {
             portfolioMoney = portfolioMoney.add(portfolio.getMoney());
             portfolioProfit = portfolioProfit.add(portfolio.getProfit());
         }
-        double totalMoney = fundMoney.add(portfolioMoney).doubleValue();
+        BigDecimal investMoney = fundMoney.add(portfolioMoney);
+        BigDecimal cashMoney = cashList.stream().map(MyCash::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         double totalProfit = fundProfit.add(portfolioProfit).doubleValue();
-
+        double totalMoney = investMoney.add(cashMoney).doubleValue();
         map.put("totalMoney", totalMoney);
         map.put("totalProfit", totalProfit);
 
