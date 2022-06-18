@@ -56,7 +56,7 @@ public class DashboardService {
         indexDTO.setTotalAssets(assetsInfo.get("totalMoney"));
         indexDTO.setTotalProfit(assetsInfo.get("totalProfit"));
 
-        BigDecimal totalPrincipal = BigDecimal.valueOf(indexDTO.getTotalAssets()).subtract(BigDecimal.valueOf(indexDTO.getTotalProfit()));
+        BigDecimal totalPrincipal = BigDecimal.valueOf(assetsInfo.get("investMoney")).subtract(BigDecimal.valueOf(indexDTO.getTotalProfit()));
         BigDecimal totalProfitRate = BigDecimal.valueOf(indexDTO.getTotalProfit()).divide(totalPrincipal, 4, RoundingMode.HALF_UP);
         totalProfitRate = totalProfitRate.multiply(BigDecimal.valueOf(100));
         indexDTO.setTotalProfitRate(totalProfitRate.doubleValue());
@@ -119,6 +119,7 @@ public class DashboardService {
         double totalProfit = fundProfit.add(portfolioProfit).doubleValue();
         double totalMoney = investMoney.add(cashMoney).doubleValue();
         map.put("totalMoney", totalMoney);
+        map.put("investMoney", investMoney.doubleValue());
         map.put("totalProfit", totalProfit);
 
         return map;
