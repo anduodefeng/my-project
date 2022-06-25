@@ -100,8 +100,8 @@ public class DashboardService {
     private Map<String, Double> getAssetsInfo(){
         Map<String, Double> map = new HashMap<>();
         List<MyCash> cashList = cashService.list();
-        List<MyFund> fundList = fundService.list(Wrappers.<MyFund>lambdaQuery().gt(MyFund::getFundMoney, 0));
-        List<MyFundPortfolio> portfolioList = portfolioService.list(Wrappers.<MyFundPortfolio>lambdaQuery().gt(MyFundPortfolio::getMoney, 0));
+        List<MyFund> fundList = fundService.list(Wrappers.<MyFund>lambdaQuery());
+        List<MyFundPortfolio> portfolioList = portfolioService.list(Wrappers.<MyFundPortfolio>lambdaQuery());
         BigDecimal fundMoney = BigDecimal.ZERO;
         BigDecimal fundProfit = BigDecimal.ZERO;
         for (MyFund fund : fundList){
