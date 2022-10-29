@@ -38,7 +38,7 @@ public class MyCashServiceImpl extends ServiceImpl<MyCashMapper, MyCash> impleme
         CashPageDTO cashPageDTO = new CashPageDTO();
         List<CashDTO> cashDTOList = new ArrayList<>();
         Page<MyCash> page = new Page<>(cashPageVO.getPage(), cashPageVO.getPageSize());
-        IPage<MyCash> iPage = page(page, Wrappers.<MyCash>lambdaQuery().orderByDesc(MyCash::getAmount));
+        IPage<MyCash> iPage = page(page, Wrappers.<MyCash>lambdaQuery().gt(MyCash::getAmount, 0).orderByDesc(MyCash::getAmount));
         if (CollectionUtil.isNotEmpty(iPage.getRecords())){
             cashDTOList = iPage.getRecords().stream().map(myCash -> {
                 CashDTO cashDTO = new CashDTO();
