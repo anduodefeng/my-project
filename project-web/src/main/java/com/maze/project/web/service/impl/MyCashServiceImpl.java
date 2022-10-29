@@ -61,7 +61,7 @@ public class MyCashServiceImpl extends ServiceImpl<MyCashMapper, MyCash> impleme
         List<PieDTO> pieList = new ArrayList<>();
         List<String> bankNameList = new ArrayList<>();
         List<Double> bankValueList = new ArrayList<>();
-        List<MyCash> cashList = list();
+        List<MyCash> cashList = list(Wrappers.<MyCash>lambdaQuery().gt(MyCash::getAmount, 0).orderByDesc(MyCash::getAmount));
         for (MyCash cash : cashList){
 
             PieDTO pieDTO = new PieDTO();
