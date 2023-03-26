@@ -11,11 +11,12 @@ public class ManyLineDTO {
 
     private String name;
     private String type = "line";
+    private String symbol = "none";
     private List<Double> data;
     private Map<String, String> emphasis = new HashMap<>(){{
         put("focus", "self");
     }};
     private Map<String, Integer> lineStyle = new HashMap<>(){{
-        put("width", 2);
+        put("width", 1);
     }};
 }
