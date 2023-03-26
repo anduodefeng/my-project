@@ -25,4 +25,6 @@ public class CommonConstant {
     };
 
     public static final String beginTime = "2022-02-01";
+
+    public static final String PREFIX_URL = "http://127.0.0.1:9999/api/public/{0}";
 }
