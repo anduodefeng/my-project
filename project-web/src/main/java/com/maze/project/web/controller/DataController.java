@@ -9,6 +9,8 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import cn.hutool.poi.excel.ExcelUtil;
+import cn.hutool.poi.excel.ExcelWriter;
 import com.maze.project.web.common.constant.CommonConstant;
 import com.maze.project.web.dto.common.BaseDTO;
 import com.maze.project.web.dto.data.DataDTO;
@@ -29,22 +31,50 @@ import java.util.Map;
 @Slf4j
 public class DataController {
 
-    @RequestMapping("/get/{fundCode}")
-    public BaseDTO getData(@PathVariable String fundCode){
+    @RequestMapping("/get/{fundCode}/{type}")
+    public BaseDTO getData(@PathVariable String fundCode, @PathVariable String type){
         String method = "fund_open_fund_info_em";
         String url = MessageFormat.format(CommonConstant.PREFIX_URL, method);
         Map<String, Object> map = MapUtil.newHashMap();
         map.put("fund", fundCode);
         map.put("indicator", "单位净值走势");
         String result = HttpUtil.get(url, map);
-        DataDTO dataDTO = handleData(result);
+        DataDTO dataDTO = handleData(result, type);
         addPercent(dataDTO);
         return BaseDTO.ok().data(dataDTO);
     }
 
-    private DataDTO handleData(String result){
-        DateTime now = DateTime.now().setField(DateField.HOUR,0).setField(DateField.MINUTE,0).setField(DateField.SECOND,0);
-        DateTime before = now.offset(DateField.YEAR, -3);
+    /**
+     * 获取指数字典 后面不用了
+     * @return 指数字典excel
+     */
+    @RequestMapping("/getIndex")
+    public BaseDTO getIndexData(){
+        // stock_zh_index_daily  指数历史数据 symbol： 参数
+        String method = "stock_zh_index_spot";
+        String url = MessageFormat.format(CommonConstant.PREFIX_URL, method);
+        String result = HttpUtil.get(url);
+        JSONArray jsonArray = JSONUtil.parseArray(result);
+        List<Map<String, String>> list = new ArrayList<>();
+        jsonArray.forEach(obj -> {
+            Map<String, String> map = MapUtil.newHashMap();
+            String code = JSONUtil.parseObj(obj).getStr("代码");
+            String name = JSONUtil.parseObj(obj).getStr("名称");
+            map.put("基金编码", code);
+            map.put("基金名称", name);
+            list.add(map);
+        });
+
+        ExcelWriter writer = ExcelUtil.getWriter("/Users/maze/Project/my-project/idea-workspace/my-project/fund.xlsx");
+        writer.write(list, true);
+        writer.close();
+        return BaseDTO.ok();
+    }
+
+
+
+    private DataDTO handleData(String result, String type){
+        DateTime before = handleDate(type);
         List<String> dateList = new ArrayList<>();
         List<Double> worthList = new ArrayList<>();
         JSONArray jsonArray = JSONUtil.parseArray(result);
@@ -68,7 +98,7 @@ public class DataController {
     private void addPercent(DataDTO dataDTO){
         List<Double> worthList = dataDTO.getWorth();
         Double max = worthList.stream().max(Double::compareTo).get();
-        Double min = worthList.stream().min(Double::compareTo).get();
+        double min = worthList.stream().min(Double::compareTo).get();
         BigDecimal maxDecimal = BigDecimal.valueOf(max);
         BigDecimal minDecimal = BigDecimal.valueOf(min);
         BigDecimal diff = maxDecimal.subtract(minDecimal);
@@ -115,6 +145,20 @@ public class DataController {
         dataDTO.setPercent70(percent70);
         dataDTO.setPercent80(percent80);
         dataDTO.setPercent90(percent90);
+    }
+
+    private DateTime handleDate(String type){
+        DateTime now = DateTime.now().setField(DateField.HOUR, 0).setField(DateField.MINUTE, 0).setField(DateField.SECOND, 0);
+        DateTime dateTime = switch (type) {
+            case "0" -> now.offset(DateField.MONTH, -1);
+            case "1" -> now.offset(DateField.MONTH, -3);
+            case "2" -> now.offset(DateField.MONTH, -6);
+            case "3" -> now.offset(DateField.YEAR, -1);
+            case "4" -> now.offset(DateField.YEAR, -2);
+            case "5" -> now.offset(DateField.YEAR, -3);
+            default -> now;
+        };
+        return dateTime;
     }
 
 }
