@@ -22,7 +22,7 @@ public class BuildDBClass {
 
         FastAutoGenerator.create(
                 "jdbc:mysql://localhost:3306/my_project?useUnicode=true&characterEncoding=utf8&autoReconnect=true&useSSL=false&serverTimezone=GMT%2B8", "root", "3006265598")
-                .globalConfig(builder -> builder.author("maze").fileOverride().outputDir(CODE_DIR))
+                .globalConfig(builder -> builder.author("maze").fileOverride().outputDir(CODE_DIR).disableOpenDir())
                 .packageConfig(builder -> builder.parent("com.maze.project").moduleName("web")
                         .entity("entity").service("service").serviceImpl("service.impl")
                         .mapper("mapper").xml("mapper").pathInfo(Collections.singletonMap(OutputFile.mapperXml, RESOURCES)))
