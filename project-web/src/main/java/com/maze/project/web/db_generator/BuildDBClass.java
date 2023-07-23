@@ -16,8 +16,7 @@ public class BuildDBClass {
     public static void main(String[] args) {
 
         String[] tables = new String[]{
-                "my_credit_card",
-                "my_credit_card_detail"
+                "my_fund_info"
         };
 
         FastAutoGenerator.create(

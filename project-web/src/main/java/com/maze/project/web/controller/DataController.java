@@ -11,9 +11,14 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.maze.project.web.common.constant.CommonConstant;
 import com.maze.project.web.dto.common.BaseDTO;
 import com.maze.project.web.dto.data.DataDTO;
+import com.maze.project.web.dto.fund.FundInfoDTO;
+import com.maze.project.web.entity.MyFundInfo;
+import com.maze.project.web.service.MyFundInfoService;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,11 +30,15 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/data")
+@AllArgsConstructor
 @Slf4j
 public class DataController {
+
+    private final MyFundInfoService myFundInfoService;
 
     @RequestMapping("/get/{fundCode}/{type}")
     public BaseDTO getData(@PathVariable String fundCode, @PathVariable String type){
@@ -69,6 +78,19 @@ public class DataController {
         writer.write(list, true);
         writer.close();
         return BaseDTO.ok();
+    }
+
+    @RequestMapping("/getFundInfoList")
+    public BaseDTO getFundInfo(){
+        List<MyFundInfo> myFundInfoList = myFundInfoService.list(Wrappers.<MyFundInfo>lambdaQuery().orderByAsc(MyFundInfo::getFundCode));
+        List<FundInfoDTO> fundInfoDTOList = myFundInfoList.stream().map(fund -> {
+            FundInfoDTO fundInfoDTO = new FundInfoDTO();
+            fundInfoDTO.setCode(fund.getFundCode());
+            fundInfoDTO.setName(fund.getFundName());
+            return fundInfoDTO;
+        }).collect(Collectors.toList());
+
+        return BaseDTO.ok().data(fundInfoDTOList);
     }
 
 
