@@ -9,8 +9,6 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import cn.hutool.poi.excel.ExcelUtil;
-import cn.hutool.poi.excel.ExcelWriter;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.maze.project.web.common.constant.CommonConstant;
 import com.maze.project.web.dto.common.BaseDTO;
@@ -54,35 +52,26 @@ public class DataController {
     }
 
     /**
-     * 获取指数字典 后面不用了
-     * @return 指数字典excel
+     * 获取指数信息
+     * @return 指数数据
      */
-    @RequestMapping("/getIndex")
-    public BaseDTO getIndexData(){
-        // stock_zh_index_daily  指数历史数据 symbol： 参数
-        String method = "stock_zh_index_spot";
+    @RequestMapping("/getIndexData/{code}/{type}")
+    public BaseDTO getIndexData(@PathVariable String code, @PathVariable String type){
+        String method = "stock_zh_index_daily";
         String url = MessageFormat.format(CommonConstant.PREFIX_URL, method);
-        String result = HttpUtil.get(url);
-        JSONArray jsonArray = JSONUtil.parseArray(result);
-        List<Map<String, String>> list = new ArrayList<>();
-        jsonArray.forEach(obj -> {
-            Map<String, String> map = MapUtil.newHashMap();
-            String code = JSONUtil.parseObj(obj).getStr("代码");
-            String name = JSONUtil.parseObj(obj).getStr("名称");
-            map.put("基金编码", code);
-            map.put("基金名称", name);
-            list.add(map);
-        });
-
-        ExcelWriter writer = ExcelUtil.getWriter("/Users/maze/Project/my-project/idea-workspace/my-project/fund.xlsx");
-        writer.write(list, true);
-        writer.close();
-        return BaseDTO.ok();
+        Map<String, Object> map = MapUtil.newHashMap();
+        map.put("symbol", code);
+        String result = HttpUtil.get(url, map);
+        DataDTO dataDTO = handleIndexData(result, type);
+        addPercent(dataDTO);
+        return BaseDTO.ok().data(dataDTO);
     }
 
-    @RequestMapping("/getFundInfoList")
-    public BaseDTO getFundInfo(){
-        List<MyFundInfo> myFundInfoList = myFundInfoService.list(Wrappers.<MyFundInfo>lambdaQuery().orderByAsc(MyFundInfo::getFundCode));
+    @RequestMapping("/getFundInfoList/{type}")
+    public BaseDTO getFundInfo(@PathVariable Integer type){
+        List<MyFundInfo> myFundInfoList = myFundInfoService.list(Wrappers.<MyFundInfo>lambdaQuery()
+                .eq(MyFundInfo::getType, type)
+                .orderByAsc(MyFundInfo::getFundCode));
         List<FundInfoDTO> fundInfoDTOList = myFundInfoList.stream().map(fund -> {
             FundInfoDTO fundInfoDTO = new FundInfoDTO();
             fundInfoDTO.setCode(fund.getFundCode());
@@ -93,8 +82,6 @@ public class DataController {
         return BaseDTO.ok().data(fundInfoDTOList);
     }
 
-
-
     private DataDTO handleData(String result, String type){
         DateTime before = handleDate(type);
         List<String> dateList = new ArrayList<>();
@@ -104,11 +91,30 @@ public class DataController {
             JSONObject jsonObject = JSONUtil.parseObj(obj);
             String date = jsonObject.get("净值日期").toString();
             Double worth = jsonObject.getDouble("单位净值");
-            date = date.split("T")[0];
-            //只要3年之内的数据
-            DateTime dateTime = DateUtil.parse(date, DatePattern.NORM_DATE_PATTERN);
+
+            DateTime dateTime = DateUtil.parse(date, DatePattern.UTC_MS_PATTERN);
             if (dateTime.before(before)) continue;
             dateList.add(date);
+            worthList.add(worth);
+        }
+        DataDTO dataDTO = new DataDTO();
+        dataDTO.setDate(dateList);
+        dataDTO.setWorth(worthList);
+        return dataDTO;
+    }
+
+    private DataDTO handleIndexData(String result, String type){
+        DateTime before = handleDate(type);
+        List<String> dateList = new ArrayList<>();
+        List<Double> worthList = new ArrayList<>();
+        JSONArray jsonArray = JSONUtil.parseArray(result);
+        for (Object obj : jsonArray){
+            JSONObject jsonObject = JSONUtil.parseObj(obj);
+            String date = jsonObject.get("date").toString();
+            Double worth = jsonObject.getDouble("close");
+            DateTime dateTime = DateUtil.parse(date, DatePattern.UTC_MS_PATTERN);
+            if (dateTime.before(before)) continue;
+            dateList.add(dateTime.toString(DatePattern.NORM_DATE_PATTERN));
             worthList.add(worth);
         }
         DataDTO dataDTO = new DataDTO();
@@ -171,16 +177,16 @@ public class DataController {
 
     private DateTime handleDate(String type){
         DateTime now = DateTime.now().setField(DateField.HOUR, 0).setField(DateField.MINUTE, 0).setField(DateField.SECOND, 0);
-        DateTime dateTime = switch (type) {
+        return switch (type) {
             case "0" -> now.offset(DateField.MONTH, -1);
             case "1" -> now.offset(DateField.MONTH, -3);
             case "2" -> now.offset(DateField.MONTH, -6);
             case "3" -> now.offset(DateField.YEAR, -1);
             case "4" -> now.offset(DateField.YEAR, -2);
             case "5" -> now.offset(DateField.YEAR, -3);
-            default -> now;
+            //默认展示全部
+            default -> now.offset(DateField.YEAR, -999);
         };
-        return dateTime;
     }
 
 }
