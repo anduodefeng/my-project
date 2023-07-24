@@ -91,10 +91,9 @@ public class DataController {
             JSONObject jsonObject = JSONUtil.parseObj(obj);
             String date = jsonObject.get("净值日期").toString();
             Double worth = jsonObject.getDouble("单位净值");
-
             DateTime dateTime = DateUtil.parse(date, DatePattern.UTC_MS_PATTERN);
             if (dateTime.before(before)) continue;
-            dateList.add(date);
+            dateList.add(dateTime.toString(DatePattern.NORM_DATE_PATTERN));
             worthList.add(worth);
         }
         DataDTO dataDTO = new DataDTO();
